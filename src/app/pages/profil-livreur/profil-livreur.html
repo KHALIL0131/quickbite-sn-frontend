@@ -1,0 +1,329 @@
+<div class="livreur-wrap">
+
+  <!-- OVERLAY -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🛵</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">🛵 Espace Livreur</div>
+    </div>
+    <div class="sb-profil">
+      <div class="sp-avatar">{{ getInitiales() }}</div>
+      <div class="sp-info">
+        <div class="sp-name">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+        <div class="sp-statut online">● En ligne</div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Navigation</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" (click)="naviguer('livraisons')"><span class="nav-icon">🛵</span><span class="nav-label">Mes livraisons</span></a>
+      <a class="nav-item" (click)="naviguer('historique')"><span class="nav-icon">📅</span><span class="nav-label">Historique</span></a>
+      <a class="nav-item" (click)="naviguer('gains')"><span class="nav-icon">💰</span><span class="nav-label">Mes gains</span></a>
+      <a class="nav-item" (click)="naviguer('carte')"><span class="nav-icon">🗺️</span><span class="nav-label">Carte GPS</span></a>
+      <a class="nav-item" (click)="naviguer('messagerie')"><span class="nav-icon">💬</span><span class="nav-label">Messagerie</span></a>
+      <div class="nav-section">Mon véhicule</div>
+      <a class="nav-item" (click)="naviguer('moto')"><span class="nav-icon">🏍️</span><span class="nav-label">Mon moto</span></a>
+      <a class="nav-item" (click)="naviguer('carburant')"><span class="nav-icon">⛽</span><span class="nav-label">Carburant</span></a>
+      <a class="nav-item" (click)="naviguer('entretien')"><span class="nav-icon">🔧</span><span class="nav-label">Entretien</span></a>
+      <div class="nav-section">Compte</div>
+      <a class="nav-item active"><span class="nav-icon">👤</span><span class="nav-label">Mon profil</span></a>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span><span class="nav-label">Paramètres</span></a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span><span class="nav-label">Déconnexion</span></a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo"><div class="logo-icon-sm">👤</div><span>Mon profil</span></div>
+      <div class="nav-avatar">{{ getInitiales() }}</div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="alert-success" *ngIf="succes">{{ succes }}</div>
+    <div class="alert-error" *ngIf="erreur">⚠️ {{ erreur }}</div>
+
+    <!-- PROFILE HERO -->
+    <div class="profile-hero">
+      <div class="ph-avatar-wrap">
+        <div class="ph-avatar">{{ getInitiales() }}</div>
+        <div class="ph-status online">● En ligne</div>
+      </div>
+      <div class="ph-info">
+        <div class="ph-name">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+        <div class="ph-email">{{ livreur?.email }}</div>
+        <div class="ph-tel" *ngIf="livreur?.telephone">📞 {{ livreur?.telephone }}</div>
+        <div class="ph-ville" *ngIf="livreur?.ville">📍 {{ livreur?.ville }}</div>
+        <div class="ph-badges">
+          <span class="badge badge-livreur">🛵 Livreur certifié</span>
+          <span class="badge badge-verified" *ngIf="livreur?.est_verifie">✅ Vérifié</span>
+        </div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-edit" (click)="showEditForm = !showEditForm">
+          {{ showEditForm ? '✕ Annuler' : '✏️ Modifier' }}
+        </button>
+        <button class="btn-logout" (click)="deconnecter()">🚪 Déconnexion</button>
+      </div>
+    </div>
+
+    <!-- STATS LIVREUR -->
+    <div class="stats-grid" *ngIf="!loading">
+      <div class="stat-card">
+        <div class="sc-icon">📦</div>
+        <div class="sc-val white">{{ stats.total_livraisons }}</div>
+        <div class="sc-lbl">Total livraisons</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon">✅</div>
+        <div class="sc-val green">{{ stats.livrees }}</div>
+        <div class="sc-lbl">Livrées</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon">📊</div>
+        <div class="sc-val orange">{{ getTauxReussite() }}%</div>
+        <div class="sc-lbl">Taux de réussite</div>
+      </div>
+      <div class="stat-card featured">
+        <div class="sc-icon">💰</div>
+        <div class="sc-val gold">{{ formaterMontant(stats.gains_total) }}</div>
+        <div class="sc-lbl">Gains cumulés</div>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des statistiques...</span>
+    </div>
+
+    <!-- ONGLETS -->
+    <div class="onglets">
+      <button class="ong-btn" [class.active]="sectionActive === 'profil'"
+              (click)="sectionActive = 'profil'">👤 Informations</button>
+      <button class="ong-btn" [class.active]="sectionActive === 'securite'"
+              (click)="sectionActive = 'securite'">🔒 Sécurité</button>
+      <button class="ong-btn" [class.active]="sectionActive === 'performances'"
+              (click)="sectionActive = 'performances'">📊 Performances</button>
+    </div>
+
+    <!-- ══ SECTION PROFIL ══ -->
+    <div class="section-card" *ngIf="sectionActive === 'profil'">
+
+      <!-- FORMULAIRE EDIT -->
+      <div class="edit-form" *ngIf="showEditForm">
+        <div class="ef-title">✏️ Modifier mes informations</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Prénom</label>
+            <input class="form-input" type="text" [(ngModel)]="form.prenom">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nom</label>
+            <input class="form-input" type="text" [(ngModel)]="form.nom">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Téléphone</label>
+          <input class="form-input" type="tel" [(ngModel)]="form.telephone"
+                 placeholder="+221 77 000 00 00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Adresse</label>
+          <input class="form-input" type="text" [(ngModel)]="form.adresse"
+                 placeholder="Votre adresse complète">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ville</label>
+          <input class="form-input" type="text" [(ngModel)]="form.ville">
+        </div>
+        <div class="form-actions">
+          <button class="btn-cancel" (click)="showEditForm = false">Annuler</button>
+          <button class="btn-save" (click)="sauvegarderProfil()" [disabled]="loadingSave">
+            <span *ngIf="!loadingSave">💾 Enregistrer</span>
+            <span *ngIf="loadingSave">⏳ Sauvegarde...</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- INFO DISPLAY -->
+      <div class="info-display" *ngIf="!showEditForm">
+        <div class="info-section">
+          <div class="is-title">Informations personnelles</div>
+          <div class="info-row">
+            <span class="ir-icon">👤</span>
+            <div>
+              <div class="ir-label">Nom complet</div>
+              <div class="ir-val">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="ir-icon">📧</span>
+            <div>
+              <div class="ir-label">Email</div>
+              <div class="ir-val">{{ livreur?.email }}</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="ir-icon">📞</span>
+            <div>
+              <div class="ir-label">Téléphone</div>
+              <div class="ir-val">{{ livreur?.telephone || 'Non renseigné' }}</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="ir-icon">📍</span>
+            <div>
+              <div class="ir-label">Adresse</div>
+              <div class="ir-val">{{ livreur?.adresse || 'Non renseignée' }}</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="ir-icon">🏙️</span>
+            <div>
+              <div class="ir-label">Ville</div>
+              <div class="ir-val">{{ livreur?.ville || 'Dakar' }}</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="ir-icon">📅</span>
+            <div>
+              <div class="ir-label">Membre depuis</div>
+              <div class="ir-val">{{ livreur?.created_at | date:'MMMM yyyy' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="is-title">Liens rapides</div>
+          <div class="quick-links">
+            <button class="ql-btn" (click)="naviguer('moto')">🏍️ Mon moto</button>
+            <button class="ql-btn" (click)="naviguer('carburant')">⛽ Carburant</button>
+            <button class="ql-btn" (click)="naviguer('entretien')">🔧 Entretien</button>
+            <button class="ql-btn" (click)="naviguer('gains')">💰 Mes gains</button>
+            <button class="ql-btn" (click)="naviguer('historique')">📅 Historique</button>
+            <button class="ql-btn" (click)="naviguer('carte')">🗺️ Carte GPS</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECTION SÉCURITÉ ══ -->
+    <div class="section-card" *ngIf="sectionActive === 'securite'">
+      <div class="is-title">🔒 Changer le mot de passe</div>
+
+      <div class="alert-success" *ngIf="successMdp">{{ successMdp }}</div>
+      <div class="alert-error" *ngIf="erreurMdp">⚠️ {{ erreurMdp }}</div>
+
+      <div class="form-group">
+        <label class="form-label">Mot de passe actuel</label>
+        <input class="form-input" type="password" [(ngModel)]="ancienMdp"
+               placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nouveau mot de passe</label>
+        <input class="form-input" type="password" [(ngModel)]="nouveauMdp"
+               placeholder="Min. 8 caractères">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmer le mot de passe</label>
+        <input class="form-input" type="password" [(ngModel)]="confirmerMdp"
+               placeholder="Répétez le nouveau mot de passe">
+      </div>
+      <button class="btn-change-mdp" (click)="changerMotDePasse()">
+        🔑 Changer le mot de passe
+      </button>
+
+      <div class="security-info">
+        <div class="si-item">
+          <span class="si-icon">✅</span>
+          <div>
+            <div class="si-label">Email vérifié</div>
+            <div class="si-val">{{ livreur?.email }}</div>
+          </div>
+        </div>
+        <div class="si-item">
+          <span class="si-icon">📱</span>
+          <div>
+            <div class="si-label">Téléphone</div>
+            <div class="si-val">{{ livreur?.telephone || 'Non renseigné' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECTION PERFORMANCES ══ -->
+    <div class="section-card" *ngIf="sectionActive === 'performances'">
+      <div class="is-title">📊 Mes performances</div>
+
+      <div class="perf-grid">
+        <div class="perf-card">
+          <div class="pc-icon">📦</div>
+          <div class="pc-val">{{ stats.total_livraisons }}</div>
+          <div class="pc-lbl">Total livraisons</div>
+        </div>
+        <div class="perf-card">
+          <div class="pc-icon">✅</div>
+          <div class="pc-val green">{{ stats.livrees }}</div>
+          <div class="pc-lbl">Livrées avec succès</div>
+        </div>
+        <div class="perf-card">
+          <div class="pc-icon">✗</div>
+          <div class="pc-val muted">{{ stats.annulees }}</div>
+          <div class="pc-lbl">Annulées</div>
+        </div>
+        <div class="perf-card">
+          <div class="pc-icon">☀️</div>
+          <div class="pc-val orange">{{ stats.aujourd_hui }}</div>
+          <div class="pc-lbl">Aujourd'hui</div>
+        </div>
+      </div>
+
+      <!-- TAUX DE RÉUSSITE -->
+      <div class="taux-card">
+        <div class="tc-header">
+          <div class="tc-label">Taux de réussite</div>
+          <div class="tc-val">{{ getTauxReussite() }}%</div>
+        </div>
+        <div class="tc-bar">
+          <div class="tc-fill" [style.width]="getTauxReussite() + '%'"></div>
+        </div>
+        <div class="tc-sub">
+          {{ stats.livrees }} livraisons réussies sur {{ stats.total_livraisons }} au total
+        </div>
+      </div>
+
+      <!-- GAINS -->
+      <div class="gains-summary">
+        <div class="gs-title">💰 Résumé des gains</div>
+        <div class="gs-row">
+          <span>Gains du jour</span>
+          <span class="gs-val orange">{{ formaterMontant(stats.gains_jour) }}</span>
+        </div>
+        <div class="gs-row">
+          <span>Gains cumulés total</span>
+          <span class="gs-val gold">{{ formaterMontant(stats.gains_total) }}</span>
+        </div>
+        <div class="gs-row">
+          <span>Commission QuickBite</span>
+          <span class="gs-val muted">Selon la zone</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

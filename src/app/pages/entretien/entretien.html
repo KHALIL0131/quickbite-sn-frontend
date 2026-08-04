@@ -1,0 +1,266 @@
+<div class="livreur-wrap">
+
+  <!-- OVERLAY -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🛵</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">🛵 Espace Livreur</div>
+    </div>
+    <div class="sb-profil">
+      <div class="sp-avatar">{{ getInitiales() }}</div>
+      <div class="sp-info">
+        <div class="sp-name">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+        <div class="sp-statut online">● En ligne</div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Navigation</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" (click)="naviguer('livraisons')"><span class="nav-icon">🛵</span><span class="nav-label">Mes livraisons</span></a>
+      <a class="nav-item" (click)="naviguer('historique')"><span class="nav-icon">📅</span><span class="nav-label">Historique</span></a>
+      <a class="nav-item" (click)="naviguer('gains')"><span class="nav-icon">💰</span><span class="nav-label">Mes gains</span></a>
+      <a class="nav-item" (click)="naviguer('carte')"><span class="nav-icon">🗺️</span><span class="nav-label">Carte GPS</span></a>
+      <a class="nav-item" (click)="naviguer('messagerie')"><span class="nav-icon">💬</span><span class="nav-label">Messagerie</span></a>
+      <div class="nav-section">Mon véhicule</div>
+      <a class="nav-item" (click)="naviguer('moto')"><span class="nav-icon">🏍️</span><span class="nav-label">Mon moto</span></a>
+      <a class="nav-item" (click)="naviguer('carburant')"><span class="nav-icon">⛽</span><span class="nav-label">Carburant</span></a>
+      <a class="nav-item active"><span class="nav-icon">🔧</span><span class="nav-label">Entretien</span></a>
+      <div class="nav-section">Compte</div>
+      <a class="nav-item" (click)="naviguer('profil')"><span class="nav-icon">👤</span><span class="nav-label">Mon profil</span></a>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span><span class="nav-label">Paramètres</span></a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span><span class="nav-label">Déconnexion</span></a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo"><div class="logo-icon-sm">🔧</div><span>Entretien</span></div>
+      <div class="nav-avatar">{{ getInitiales() }}</div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Entretien 🔧</div>
+        <div class="ph-sub">Gérez l'entretien de votre véhicule</div>
+      </div>
+      <button class="btn-add" (click)="showForm = !showForm">
+        {{ showForm ? '✕ Annuler' : '+ Ajouter un entretien' }}
+      </button>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="alert-success" *ngIf="succes">{{ succes }}</div>
+    <div class="alert-error" *ngIf="erreur">⚠️ {{ erreur }}</div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement...</span>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="sc-icon">🔧</div>
+          <div class="sc-val white">{{ stats.nombre || 0 }}</div>
+          <div class="sc-lbl">Entretiens cette année</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">💰</div>
+          <div class="sc-val orange">{{ formaterMontant(stats.total_cout) }}</div>
+          <div class="sc-lbl">Coût total cette année</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">⚠️</div>
+          <div class="sc-val yellow">
+            {{ entretiens.filter($any(e => getAlertClass(e) !== '')).length }}
+          </div>
+          <div class="sc-lbl">Entretiens urgents</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">📅</div>
+          <div class="sc-val green">
+            {{ entretiens.length > 0 ? formaterDate(entretiens[0].date_entretien) : '—' }}
+          </div>
+          <div class="sc-lbl">Dernier entretien</div>
+        </div>
+      </div>
+
+      <!-- ALERTES ENTRETIEN URGENT -->
+      <div class="alertes-urgentes" *ngIf="entretiens.some($any(e => getAlertClass(e) !== ''))">
+        <div class="au-title">⚠️ Entretiens à planifier</div>
+        <div class="au-item" *ngFor="let e of entretiens"
+             [class.urgent]="getAlertClass(e) === 'urgent'"
+             [class.warning]="getAlertClass(e) === 'warning'"
+             [style.display]="getAlertClass(e) ? 'flex' : 'none'">
+          <span class="ai-icon">🔧</span>
+          <div class="ai-info">
+            <div class="ai-type">{{ e.type_entretien }}</div>
+            <div class="ai-vehicule" *ngIf="e.marque">{{ e.marque }} {{ e.modele }}</div>
+          </div>
+          <div class="ai-date">{{ getProchainEntretien(e) }}</div>
+        </div>
+      </div>
+
+      <!-- FORMULAIRE -->
+      <div class="form-card" *ngIf="showForm">
+        <div class="fc-title">🔧 Nouvel entretien</div>
+
+        <div class="vehicule-info" *ngIf="vehicule">
+          <span>🏍️</span>
+          <span>{{ vehicule.marque }} {{ vehicule.modele }}</span>
+          <span class="vi-immat" *ngIf="vehicule.immatriculation">· {{ vehicule.immatriculation }}</span>
+        </div>
+
+        <!-- TYPE D'ENTRETIEN -->
+        <div class="form-group">
+          <label class="form-label">Type d'entretien *</label>
+          <div class="type-grid">
+            <div class="type-btn" *ngFor="let t of typesEntretien"
+                 [class.active]="form.type_entretien === t"
+                 (click)="form.type_entretien = t">
+              {{ t }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input form-textarea" [(ngModel)]="form.description"
+                    placeholder="Décrivez l'entretien effectué..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Coût (F)</label>
+            <input class="form-input" type="number" [(ngModel)]="form.cout"
+                   placeholder="Ex: 15000" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kilométrage (km)</label>
+            <input class="form-input" type="number" [(ngModel)]="form.kilometrage"
+                   placeholder="Ex: 15000" min="0">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date d'entretien *</label>
+            <input class="form-input" type="date" [(ngModel)]="form.date_entretien">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prochain entretien</label>
+            <input class="form-input" type="date" [(ngModel)]="form.prochain_entretien">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Garage / Mécanicien</label>
+          <input class="form-input" type="text" [(ngModel)]="form.garage"
+                 placeholder="Ex: Garage Plateau, Mame Diop...">
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-cancel" (click)="showForm = false; resetForm()">Annuler</button>
+          <button class="btn-save" (click)="sauvegarder()" [disabled]="loadingSave">
+            <span *ngIf="!loadingSave">💾 Enregistrer</span>
+            <span *ngIf="loadingSave">⏳ Sauvegarde...</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- EMPTY -->
+      <div class="empty-state" *ngIf="entretiens.length === 0 && !showForm">
+        <div style="font-size:64px;margin-bottom:16px">🔧</div>
+        <div class="es-title">Aucun entretien enregistré</div>
+        <div class="es-sub">Commencez à suivre l'entretien de votre véhicule</div>
+        <button class="btn-start" (click)="showForm = true">+ Ajouter un entretien</button>
+      </div>
+
+      <!-- LISTE ENTRETIENS -->
+      <div class="entretien-list" *ngIf="entretiens.length > 0 && !showForm">
+        <div class="el-header">
+          <div class="el-title">📋 Historique des entretiens</div>
+          <div class="el-count">{{ entretiens.length }} entretien(s)</div>
+        </div>
+
+        <div class="entretien-item" *ngFor="let e of entretiens"
+             [ngClass]="getAlertClass(e)">
+          <div class="ei-header">
+            <div class="ei-type-wrap">
+              <div class="ei-icon">🔧</div>
+              <div>
+                <div class="ei-type">{{ e.type_entretien }}</div>
+                <div class="ei-vehicule" *ngIf="e.marque">{{ e.marque }} {{ e.modele }}</div>
+              </div>
+            </div>
+            <div class="ei-cout" *ngIf="e.cout > 0">{{ formaterMontant(e.cout) }}</div>
+          </div>
+
+          <div class="ei-details">
+            <div class="ei-row" *ngIf="e.description">
+              <span class="ei-lbl">📝 Description</span>
+              <span>{{ e.description }}</span>
+            </div>
+            <div class="ei-row" *ngIf="e.kilometrage">
+              <span class="ei-lbl">📏 Kilométrage</span>
+              <span>{{ e.kilometrage | number }} km</span>
+            </div>
+            <div class="ei-row">
+              <span class="ei-lbl">📅 Date</span>
+              <span>{{ formaterDate(e.date_entretien) }}</span>
+            </div>
+            <div class="ei-row" *ngIf="e.garage">
+              <span class="ei-lbl">🏪 Garage</span>
+              <span>{{ e.garage }}</span>
+            </div>
+            <div class="ei-row prochain" *ngIf="e.prochain_entretien">
+              <span class="ei-lbl">⏭ Prochain</span>
+              <span [class.urgent]="getAlertClass(e) === 'urgent'"
+                    [class.warning-text]="getAlertClass(e) === 'warning'">
+                {{ formaterDate(e.prochain_entretien) }}
+                · {{ getProchainEntretien(e) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDRIER ENTRETIENS -->
+      <div class="planning-card" *ngIf="entretiens.length > 0">
+        <div class="pc-title">📅 Planning des prochains entretiens</div>
+        <div class="empty-planning"
+             *ngIf="entretiens.filter($any(e => e.prochain_entretien)).length === 0">
+          Aucun prochain entretien planifié
+        </div>
+        <div class="planning-item" *ngFor="let e of entretiens"
+             [style.display]="e.prochain_entretien ? 'flex' : 'none'">
+          <div class="pi-date">{{ formaterDate(e.prochain_entretien) }}</div>
+          <div class="pi-type">{{ e.type_entretien }}</div>
+          <div class="pi-status" [ngClass]="getAlertClass(e)">
+            {{ getProchainEntretien(e) }}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

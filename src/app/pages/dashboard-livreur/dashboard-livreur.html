@@ -1,0 +1,369 @@
+<div class="livreur-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR COMPLET -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🛵</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">🛵 Espace Livreur</div>
+    </div>
+
+    <!-- PROFIL LIVREUR -->
+    <div class="sb-profil">
+      <div class="sp-avatar">{{ getInitiales() }}</div>
+      <div class="sp-info">
+        <div class="sp-name">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+        <div class="sp-statut" [class.online]="estEnLigne" [class.offline]="!estEnLigne">
+          {{ estEnLigne ? '● En ligne' : '○ Hors ligne' }}
+        </div>
+      </div>
+      <div class="sp-toggle" [class.on]="estEnLigne" (click)="toggleStatut()">
+        <div class="sp-thumb"></div>
+      </div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="nav-section">Navigation</div>
+
+      <a class="nav-item active">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a class="nav-item" (click)="naviguer('livraisons')">
+        <span class="nav-icon">🛵</span>
+        <span class="nav-label">Mes livraisons</span>
+        <span class="nav-badge" *ngIf="stats_encours > 0">{{ stats_encours }}</span>
+      </a>
+      <a class="nav-item" (click)="naviguer('historique')">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Historique</span>
+      </a>
+      <a class="nav-item" (click)="naviguer('gains')">
+        <span class="nav-icon">💰</span>
+        <span class="nav-label">Mes gains</span>
+      </a>
+      <a class="nav-item" (click)="naviguer('carte')">
+        <span class="nav-icon">🗺️</span>
+        <span class="nav-label">Carte GPS</span>
+      </a>
+      <a class="nav-item" (click)="naviguer('messagerie')">
+        <span class="nav-icon">💬</span>
+        <span class="nav-label">Messagerie</span>
+      </a>
+
+      <div class="nav-section">Mon véhicule</div>
+      <a class="nav-item" (click)="naviguer('moto')">
+        <span class="nav-icon">🏍️</span>
+        <span class="nav-label">Mon moto</span>
+      </a>
+      <a class="nav-item" (click)="naviguer('carburant')">
+        <span class="nav-icon">⛽</span>
+        <span class="nav-label">Carburant</span>
+      </a>
+      <a class="nav-item" (click)="naviguer('entretien')">
+        <span class="nav-icon">🔧</span>
+        <span class="nav-label">Entretien</span>
+      </a>
+
+      <div class="nav-section">Compte</div>
+      <a class="nav-item" (click)="naviguer('profil')">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Mon profil</span>
+      </a>
+      <a class="nav-item" (click)="naviguer('parametres')">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">Paramètres</span>
+      </a>
+      <a class="nav-item" (click)="deconnecter()">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-label">Déconnexion</span>
+      </a>
+    </div>
+
+    <!-- STATS RAPIDES SIDEBAR -->
+    <div class="sb-stats">
+      <div class="ss-item">
+        <div class="ss-val">{{ kpis.livraisons }}</div>
+        <div class="ss-lbl">Livraisons</div>
+      </div>
+      <div class="ss-sep"></div>
+      <div class="ss-item">
+        <div class="ss-val">{{ formaterMontant(kpis.gains) }}</div>
+        <div class="ss-lbl">Gains</div>
+      </div>
+      <div class="ss-sep"></div>
+      <div class="ss-item">
+        <div class="ss-val">{{ kpis.note }}</div>
+        <div class="ss-lbl">Ma note</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🛵</div>
+        <span>QuickBite <span>Livreur</span></span>
+      </div>
+      <button class="mobile-notif-btn" (click)="toggleNotifs()">
+        🔔
+        <span class="notif-dot" *ngIf="notifsNonLues > 0">{{ notifsNonLues }}</span>
+      </button>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="header-left">
+        <div class="greeting">{{ dateAujourdhui }} · Dakar</div>
+        <div class="page-title">Bonjour {{ livreur?.prenom }} 👋</div>
+      </div>
+      <div class="status-row">
+        <button class="notif-btn" (click)="toggleNotifs()">
+          🔔
+          <span class="notif-dot" *ngIf="notifsNonLues > 0">{{ notifsNonLues }}</span>
+        </button>
+        <span class="status-label" [class.online]="estEnLigne" [class.offline]="!estEnLigne">
+          {{ estEnLigne ? '● En ligne' : '○ Hors ligne' }}
+        </span>
+        <div class="toggle-track" [class.on]="estEnLigne" (click)="toggleStatut()">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PANNEAU NOTIFICATIONS ══ -->
+    <div class="notif-panel" *ngIf="showNotifs">
+      <div class="np-header">
+        <div class="np-title">🔔 Mes notifications</div>
+        <button class="np-close" (click)="showNotifs = false">✕</button>
+      </div>
+      <div class="np-empty" *ngIf="notifications.length === 0">
+        Aucune notification pour le moment
+      </div>
+      <div class="np-item" *ngFor="let n of notifications"
+           [class.unread]="n.est_lu == 0"
+           (click)="ouvrirNotification(n)">
+        <div class="np-icon">
+          {{ n.type === 'livraison' ? '🛵' : n.type === 'commande' ? '📦' : '🔔' }}
+        </div>
+        <div class="np-content">
+          <div class="np-item-titre">{{ n.titre }}</div>
+          <div class="np-item-msg">{{ n.message }}</div>
+          <div class="np-item-date">{{ formaterHeure(n.created_at) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement...</span>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- ══ ALERTE COMMANDE ASSIGNÉE ══ -->
+      <div class="new-order-alert" *ngIf="showAlerte && nouvelleCommande"
+           [class.ring]="sonAlerte">
+        <div class="alert-header">
+          <div class="alert-title">
+            <span class="alert-bell">🔔</span>
+            L'administrateur vous a assigné une livraison
+          </div>
+          <div class="alert-badge">Urgent</div>
+        </div>
+
+        <div class="alert-numero">
+          Commande #{{ nouvelleCommande.numero }}
+        </div>
+
+        <div class="alert-body">
+          <div class="alert-info">
+            <div class="ai-label">👤 Client</div>
+            <div class="ai-val">
+              {{ nouvelleCommande.client_prenom }} {{ nouvelleCommande.client_nom }}
+            </div>
+          </div>
+          <div class="alert-info">
+            <div class="ai-label">📞 Téléphone</div>
+            <div class="ai-val">{{ nouvelleCommande.client_telephone || '—' }}</div>
+          </div>
+          <div class="alert-info">
+            <div class="ai-label">🏪 Restaurant</div>
+            <div class="ai-val">{{ nouvelleCommande.restaurant_nom || '—' }}</div>
+          </div>
+          <div class="alert-info full">
+            <div class="ai-label">📍 Adresse de livraison</div>
+            <div class="ai-val">{{ nouvelleCommande.adresse_livraison }}</div>
+          </div>
+          <div class="alert-info">
+            <div class="ai-label">💰 Montant commande</div>
+            <div class="ai-val">{{ formaterMontant(nouvelleCommande.montant_total) }}</div>
+          </div>
+          <div class="alert-info">
+            <div class="ai-label">🎯 Votre gain</div>
+            <div class="ai-val green">
+              +{{ formaterMontant(nouvelleCommande.gain_livreur || getGainLivraison(nouvelleCommande)) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="alert-actions">
+          <button class="btn-accept" (click)="accepterCommande()">
+            ✅ J'accepte cette course
+          </button>
+          <button class="btn-carte" (click)="voirSurCarte()">
+            🗺️ Voir sur la carte
+          </button>
+          <button class="btn-msg" (click)="contacterClient()">
+            💬 Contacter
+          </button>
+          <button class="btn-decline" (click)="refuserCommande()">
+            Plus tard
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card" (click)="naviguer('livraisons')">
+          <span class="kpi-icon">📦</span>
+          <div class="kpi-val white">{{ kpis.livraisons }}</div>
+          <div class="kpi-lbl">Livraisons aujourd'hui</div>
+          <div class="kpi-delta up">↑ Aujourd'hui</div>
+        </div>
+        <div class="kpi-card" (click)="naviguer('gains')">
+          <span class="kpi-icon">💰</span>
+          <div class="kpi-val yellow">{{ formaterMontant(kpis.gains) }}</div>
+          <div class="kpi-lbl">Gains du jour</div>
+          <div class="kpi-delta up">↑ Par livraison</div>
+        </div>
+        <div class="kpi-card" (click)="naviguer('profil')">
+          <span class="kpi-icon">⭐</span>
+          <div class="kpi-val yellow">{{ kpis.note }}</div>
+          <div class="kpi-lbl">Note moyenne</div>
+          <div class="kpi-delta neutral">
+            {{ kpis.note === '—' ? 'Aucune livraison encore' : 'Excellente note' }}
+          </div>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-icon">⚡</span>
+          <div class="kpi-val green">{{ kpis.tempsMovyen }}</div>
+          <div class="kpi-lbl">Temps moyen livraison</div>
+          <div class="kpi-delta up">
+            {{ kpis.tempsMovyen === '—' ? 'Pas de données' : '↓ Très rapide' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIONS RAPIDES -->
+      <div class="quick-actions">
+        <button class="qa-btn" (click)="naviguer('livraisons')">
+          <span>🛵</span><span>Mes livraisons</span>
+        </button>
+        <button class="qa-btn" (click)="naviguer('carte')">
+          <span>🗺️</span><span>Carte GPS</span>
+        </button>
+        <button class="qa-btn" (click)="naviguer('messagerie')">
+          <span>💬</span><span>Messagerie</span>
+        </button>
+        <button class="qa-btn" (click)="naviguer('gains')">
+          <span>💰</span><span>Mes gains</span>
+        </button>
+        <button class="qa-btn" (click)="naviguer('historique')">
+          <span>📅</span><span>Historique</span>
+        </button>
+        <button class="qa-btn" (click)="naviguer('profil')">
+          <span>👤</span><span>Mon profil</span>
+        </button>
+      </div>
+
+      <!-- GAINS SEMAINE -->
+      <div class="earnings-card">
+        <div class="ec-header">
+          <div class="ec-title">💰 Gains cette semaine</div>
+          <div class="ec-actions">
+            <button class="ec-btn" (click)="naviguer('gains')">Voir détails →</button>
+            <div class="ec-total">{{ formaterMontant(totalGainsSemaine) }}</div>
+          </div>
+        </div>
+        <div class="bars-row">
+          <div class="bar-wrap" *ngFor="let g of gainsSemaine">
+            <div class="bar" [class.today]="g.actif" [style.height]="g.pct + '%'"></div>
+            <div class="bar-day" [class.today]="g.actif">{{ g.jour }}</div>
+          </div>
+        </div>
+        <div class="ec-empty" *ngIf="totalGainsSemaine === 0">
+          Aucun gain cette semaine — vos gains apparaîtront après vos premières livraisons
+        </div>
+      </div>
+
+      <!-- LIVRAISONS DU JOUR -->
+      <div class="section-header">
+        <div class="section-title">Livraisons d'aujourd'hui</div>
+        <div class="section-actions">
+          <div class="filter-tabs">
+            <div class="ftab" [class.active]="filtreActif === 'toutes'"
+                 (click)="setFiltre('toutes')">Toutes</div>
+            <div class="ftab" [class.active]="filtreActif === 'terminees'"
+                 (click)="setFiltre('terminees')">Terminées</div>
+            <div class="ftab" [class.active]="filtreActif === 'encours'"
+                 (click)="setFiltre('encours')">En cours</div>
+          </div>
+          <button class="btn-voir-tout" (click)="naviguer('livraisons')">Voir tout →</button>
+        </div>
+      </div>
+
+      <!-- EMPTY -->
+      <div class="empty-livraisons" *ngIf="livraisonsFiltrees.length === 0">
+        <div style="font-size:48px;margin-bottom:12px">🛵</div>
+        <div style="font-size:16px;color:#FFFFFF;font-weight:700;margin-bottom:6px">
+          Aucune livraison {{ filtreActif !== 'toutes' ? 'dans cette catégorie' : "aujourd'hui" }}
+        </div>
+        <div style="font-size:13px;color:#6B8F77">
+          {{ estEnLigne
+             ? 'En attente qu\'un administrateur vous assigne une course...'
+             : 'Passez en ligne pour recevoir des courses' }}
+        </div>
+      </div>
+
+      <!-- LISTE LIVRAISONS -->
+      <div class="order-row" *ngFor="let c of livraisonsFiltrees" (click)="voirCommande(c)">
+        <div class="or-emoji">{{ c.details?.[0]?.emoji || '🍽️' }}</div>
+        <div class="or-info">
+          <div class="or-id">#{{ c.numero }}</div>
+          <div class="or-client">{{ c.client_prenom }} {{ c.client_nom }}</div>
+          <div class="or-addr">📍 {{ c.adresse_livraison }}</div>
+          <div class="or-tel" *ngIf="c.client_telephone">📞 {{ c.client_telephone }}</div>
+        </div>
+        <div class="or-meta">
+          <div class="or-amount">{{ formaterMontant(c.montant_total) }}</div>
+          <div class="or-gain">+{{ formaterMontant(getGainLivraison(c)) }} gain</div>
+          <div class="status-badge" [ngClass]="getStatutClass(c.statut)">
+            {{ getStatutLabel(c.statut) }}
+          </div>
+          <button class="btn-livree" *ngIf="c.statut === 'en_livraison'"
+                  (click)="marquerLivree(c, $event)">
+            ✅ Marquer livrée
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

@@ -1,0 +1,218 @@
+<div class="livreur-wrap">
+
+  <!-- OVERLAY -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🛵</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">🛵 Espace Livreur</div>
+    </div>
+    <div class="sb-profil">
+      <div class="sp-avatar">{{ getInitiales() }}</div>
+      <div class="sp-info">
+        <div class="sp-name">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+        <div class="sp-statut online">● En ligne</div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Navigation</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" (click)="naviguer('livraisons')"><span class="nav-icon">🛵</span><span class="nav-label">Mes livraisons</span></a>
+      <a class="nav-item" (click)="naviguer('historique')"><span class="nav-icon">📅</span><span class="nav-label">Historique</span></a>
+      <a class="nav-item" (click)="naviguer('gains')"><span class="nav-icon">💰</span><span class="nav-label">Mes gains</span></a>
+      <a class="nav-item" (click)="naviguer('carte')"><span class="nav-icon">🗺️</span><span class="nav-label">Carte GPS</span></a>
+      <a class="nav-item" (click)="naviguer('messagerie')">
+  <span class="nav-icon">💬</span>
+  <span class="nav-label">Messagerie</span>
+</a>
+      <div class="nav-section">Mon véhicule</div>
+      <a class="nav-item" (click)="naviguer('moto')"><span class="nav-icon">🏍️</span><span class="nav-label">Mon moto</span></a>
+      <a class="nav-item active"><span class="nav-icon">⛽</span><span class="nav-label">Carburant</span></a>
+      <a class="nav-item" (click)="naviguer('entretien')"><span class="nav-icon">🔧</span><span class="nav-label">Entretien</span></a>
+      <div class="nav-section">Compte</div>
+      <a class="nav-item" (click)="naviguer('profil')"><span class="nav-icon">👤</span><span class="nav-label">Mon profil</span></a>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span><span class="nav-label">Paramètres</span></a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span><span class="nav-label">Déconnexion</span></a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo"><div class="logo-icon-sm">⛽</div><span>Carburant</span></div>
+      <div class="nav-avatar">{{ getInitiales() }}</div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Carburant ⛽</div>
+        <div class="ph-sub">Suivez votre consommation de carburant</div>
+      </div>
+      <button class="btn-add" (click)="showForm = !showForm">
+        {{ showForm ? '✕ Annuler' : '+ Ajouter un plein' }}
+      </button>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="alert-success" *ngIf="succes">{{ succes }}</div>
+    <div class="alert-error" *ngIf="erreur">⚠️ {{ erreur }}</div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement...</span>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- STATS CARBURANT -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="sc-icon">💰</div>
+          <div class="sc-val orange">{{ formaterMontant(stats.total_depense) }}</div>
+          <div class="sc-lbl">Dépensé ce mois</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">⛽</div>
+          <div class="sc-val blue">{{ stats.total_litres || 0 }} L</div>
+          <div class="sc-lbl">Litres ce mois</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">🔢</div>
+          <div class="sc-val green">{{ stats.nombre_remplissages || 0 }}</div>
+          <div class="sc-lbl">Pleins ce mois</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">📊</div>
+          <div class="sc-val yellow">{{ getConsommation() }}</div>
+          <div class="sc-lbl">Prix moyen/litre</div>
+        </div>
+      </div>
+
+      <!-- FORMULAIRE AJOUT -->
+      <div class="form-card" *ngIf="showForm">
+        <div class="fc-title">⛽ Nouveau plein</div>
+
+        <div class="vehicule-info" *ngIf="vehicule">
+          <span class="vi-icon">🏍️</span>
+          <span>{{ vehicule.marque }} {{ vehicule.modele }}</span>
+          <span class="vi-immat" *ngIf="vehicule.immatriculation">· {{ vehicule.immatriculation }}</span>
+        </div>
+
+        <div class="no-vehicule" *ngIf="!vehicule">
+          <span>⚠️ Aucun véhicule enregistré.</span>
+          <button class="btn-link" (click)="naviguer('moto')">Ajouter mon véhicule →</button>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Montant payé (F) *</label>
+            <input class="form-input" type="number" [(ngModel)]="form.montant"
+                   placeholder="Ex: 5000" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Litres</label>
+            <input class="form-input" type="number" [(ngModel)]="form.litres"
+                   placeholder="Ex: 5.5" step="0.1" min="0">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Kilométrage actuel (km)</label>
+            <input class="form-input" type="number" [(ngModel)]="form.kilometrage"
+                   placeholder="Ex: 12500" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date *</label>
+            <input class="form-input" type="date" [(ngModel)]="form.date_remplissage">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes (optionnel)</label>
+          <textarea class="form-input form-textarea" [(ngModel)]="form.notes"
+                    placeholder="Station Total Plateau, numéro de reçu..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-cancel" (click)="showForm = false; resetForm()">Annuler</button>
+          <button class="btn-save" (click)="sauvegarder()" [disabled]="loadingSave">
+            <span *ngIf="!loadingSave">💾 Enregistrer</span>
+            <span *ngIf="loadingSave">⏳ Sauvegarde...</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- EMPTY -->
+      <div class="empty-state" *ngIf="carburants.length === 0 && !showForm">
+        <div style="font-size:64px;margin-bottom:16px">⛽</div>
+        <div class="es-title">Aucun plein enregistré</div>
+        <div class="es-sub">Commencez à suivre votre consommation</div>
+        <button class="btn-start" (click)="showForm = true">+ Ajouter un plein</button>
+      </div>
+
+      <!-- LISTE CARBURANTS -->
+      <div class="carburant-list" *ngIf="carburants.length > 0">
+        <div class="cl-header">
+          <div class="cl-title">📋 Historique des pleins</div>
+          <div class="cl-count">{{ carburants.length }} enregistrements</div>
+        </div>
+
+        <div class="carburant-item" *ngFor="let c of carburants">
+          <div class="ci-date-wrap">
+            <div class="ci-icon">⛽</div>
+            <div class="ci-date">{{ formaterDate(c.date_remplissage) }}</div>
+          </div>
+          <div class="ci-info">
+            <div class="ci-vehicule" *ngIf="c.marque">
+              🏍️ {{ c.marque }} {{ c.modele }}
+            </div>
+            <div class="ci-details">
+              <span *ngIf="c.litres">{{ c.litres }} L</span>
+              <span *ngIf="c.kilometrage">· {{ c.kilometrage | number }} km</span>
+            </div>
+            <div class="ci-notes" *ngIf="c.notes">📝 {{ c.notes }}</div>
+          </div>
+          <div class="ci-montant">{{ formaterMontant(c.montant) }}</div>
+        </div>
+      </div>
+
+      <!-- CONSEILS -->
+      <div class="tips-card">
+        <div class="tc-title">💡 Conseils carburant</div>
+        <div class="tip-row">
+          <span class="tip-icon">⛽</span>
+          <span>Faites le plein quand la jauge est à <strong>¼</strong> pour éviter les pannes</span>
+        </div>
+        <div class="tip-row">
+          <span class="tip-icon">📊</span>
+          <span>Suivez votre consommation pour détecter d'éventuelles anomalies</span>
+        </div>
+        <div class="tip-row">
+          <span class="tip-icon">💰</span>
+          <span>Préférez les stations avec les prix les plus bas pour économiser</span>
+        </div>
+        <div class="tip-row">
+          <span class="tip-icon">🏍️</span>
+          <span>Une pression de pneus correcte réduit la consommation de <strong>5%</strong></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

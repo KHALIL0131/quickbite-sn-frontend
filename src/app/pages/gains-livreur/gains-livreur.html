@@ -1,0 +1,178 @@
+<div class="livreur-wrap">
+
+  <!-- OVERLAY -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🛵</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">🛵 Espace Livreur</div>
+    </div>
+    <div class="sb-profil">
+      <div class="sp-avatar">{{ getInitiales() }}</div>
+      <div class="sp-info">
+        <div class="sp-name">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+        <div class="sp-statut online">● En ligne</div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Navigation</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" (click)="naviguer('livraisons')"><span class="nav-icon">🛵</span><span class="nav-label">Mes livraisons</span></a>
+      <a class="nav-item" (click)="naviguer('historique')"><span class="nav-icon">📅</span><span class="nav-label">Historique</span></a>
+      <a class="nav-item active"><span class="nav-icon">💰</span><span class="nav-label">Mes gains</span></a>
+      <a class="nav-item" (click)="naviguer('carte')"><span class="nav-icon">🗺️</span><span class="nav-label">Carte GPS</span></a>
+      <a class="nav-item" (click)="naviguer('messagerie')"><span class="nav-icon">💬</span><span class="nav-label">Messagerie</span></a>
+      <div class="nav-section">Mon véhicule</div>
+      <a class="nav-item" (click)="naviguer('moto')"><span class="nav-icon">🏍️</span><span class="nav-label">Mon moto</span></a>
+      <a class="nav-item" (click)="naviguer('carburant')"><span class="nav-icon">⛽</span><span class="nav-label">Carburant</span></a>
+      <a class="nav-item" (click)="naviguer('entretien')"><span class="nav-icon">🔧</span><span class="nav-label">Entretien</span></a>
+      <div class="nav-section">Compte</div>
+      <a class="nav-item" (click)="naviguer('profil')"><span class="nav-icon">👤</span><span class="nav-label">Mon profil</span></a>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span><span class="nav-label">Paramètres</span></a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span><span class="nav-label">Déconnexion</span></a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo"><div class="logo-icon-sm">💰</div><span>Mes gains</span></div>
+      <div class="nav-avatar">{{ getInitiales() }}</div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Mes gains 💰</div>
+        <div class="ph-sub">Suivi de vos revenus de livraison</div>
+      </div>
+      <button class="btn-refresh" (click)="chargerGains()">🔄 Actualiser</button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement de vos gains...</span>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- KPI GAINS -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kc-icon">☀️</div>
+          <div class="kc-label">Aujourd'hui</div>
+          <div class="kc-val orange">{{ formaterMontant(gains.jour) }}</div>
+          <div class="kc-sub">Gains du jour</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kc-icon">📅</div>
+          <div class="kc-label">Cette semaine</div>
+          <div class="kc-val yellow">{{ formaterMontant(gains.semaine) }}</div>
+          <div class="kc-sub">Gains semaine</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kc-icon">🗓️</div>
+          <div class="kc-label">Ce mois</div>
+          <div class="kc-val green">{{ formaterMontant(gains.mois) }}</div>
+          <div class="kc-sub">Gains du mois</div>
+        </div>
+        <div class="kpi-card featured">
+          <div class="kc-icon">🏆</div>
+          <div class="kc-label">Total cumulé</div>
+          <div class="kc-val gold">{{ formaterMontant(gains.total) }}</div>
+          <div class="kc-sub">Tous les temps</div>
+        </div>
+      </div>
+
+      <!-- GRAPHIQUE GAINS 7 JOURS -->
+      <div class="chart-card" *ngIf="gains.parJour.length > 0">
+        <div class="cc-header">
+          <div class="cc-title">📈 Gains des 7 derniers jours</div>
+          <div class="cc-total">{{ formaterMontant(gains.semaine) }}</div>
+        </div>
+        <div class="bars-wrap">
+          <div class="bar-col" *ngFor="let j of gains.parJour">
+            <div class="bar-val">{{ formaterMontant(j.total) }}</div>
+            <div class="bar-outer">
+              <div class="bar-inner" [style.height]="getBarHeight(j)"></div>
+            </div>
+            <div class="bar-label">{{ formaterDate(j.jour) }}</div>
+            <div class="bar-count">{{ j.livraisons }} livr.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPTY GRAPHIQUE -->
+      <div class="chart-card empty-chart" *ngIf="gains.parJour.length === 0">
+        <div class="cc-header">
+          <div class="cc-title">📈 Gains des 7 derniers jours</div>
+        </div>
+        <div class="empty-chart-msg">
+          <div style="font-size:48px;margin-bottom:12px">💰</div>
+          <div style="font-size:16px;color:#FFFFFF;font-weight:700">Aucun gain enregistré</div>
+          <div style="font-size:13px;color:#6B8F77;margin-top:8px">
+            Acceptez des livraisons pour commencer à gagner
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIQUE GAINS -->
+      <div class="historique-card">
+        <div class="hc-title">📋 Historique des gains</div>
+
+        <div class="empty-state" *ngIf="gains.historique.length === 0">
+          <div style="font-size:48px;margin-bottom:12px">📋</div>
+          <div class="es-title">Aucun gain enregistré</div>
+          <div class="es-sub">Vos gains apparaîtront ici après chaque livraison</div>
+        </div>
+
+        <div class="gain-row" *ngFor="let g of gains.historique">
+          <div class="gr-icon">
+            {{ g.type === 'bonus' ? '🎁' : g.type === 'penalite' ? '⚠️' : '🛵' }}
+          </div>
+          <div class="gr-info">
+            <div class="gr-titre">
+              {{ g.type === 'bonus' ? 'Bonus' : g.type === 'penalite' ? 'Pénalité' : 'Livraison' }}
+              <span *ngIf="g.commande_numero"> · #{{ g.commande_numero }}</span>
+            </div>
+            <div class="gr-client" *ngIf="g.client_nom">
+              {{ g.client_prenom }} {{ g.client_nom }}
+            </div>
+            <div class="gr-date">{{ formaterDate(g.date_gain) }}</div>
+          </div>
+          <div class="gr-montant" [class.positif]="g.type !== 'penalite'"
+               [class.negatif]="g.type === 'penalite'">
+            {{ g.type === 'penalite' ? '−' : '+' }}{{ formaterMontant(g.montant) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- INFO COMMISSION -->
+      <div class="commission-info">
+        <div class="ci-icon">💡</div>
+        <div>
+          <div class="ci-title">Comment sont calculés vos gains ?</div>
+          <div class="ci-text">
+            Vous recevez le <strong>montant exact des frais de livraison</strong> de la zone.
+            Des bonus peuvent être ajoutés pour les livraisons rapides ou en heure de pointe.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

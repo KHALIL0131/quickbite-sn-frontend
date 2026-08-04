@@ -1,0 +1,94 @@
+<div class="otp-wrap">
+  <div class="bg-circle"></div>
+  <div class="bg-circle"></div>
+
+  <div class="otp-card">
+
+    <!-- LOGO -->
+    <div class="card-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+
+    <!-- ICÔNE CENTRALE -->
+    <div class="otp-icon-ring">
+      <div class="otp-emoji">📱</div>
+    </div>
+
+    <!-- TITRE -->
+    <div class="otp-title">Vérification OTP</div>
+    <div class="otp-sub">Un code à 6 chiffres a été envoyé à</div>
+    <div class="otp-target">{{ email }}</div>
+
+    <!-- MÉTHODE SMS / EMAIL -->
+    <div class="method-tabs">
+      <div class="method-tab" [class.active]="methodActive === 'sms'" (click)="changerMethode('sms')">
+        📱 SMS
+      </div>
+      <div class="method-tab" [class.active]="methodActive === 'email'" (click)="changerMethode('email')">
+        📧 Email
+      </div>
+    </div>
+
+    <!-- ERREUR -->
+    <div class="error-alert" *ngIf="erreur">⚠️ {{ erreur }}</div>
+
+    <!-- CHAMPS OTP -->
+    <div class="otp-inputs" (paste)="onPaste($event)">
+      <input class="otp-digit"
+             *ngFor="let d of digits; let i = index"
+             [class.filled]="digits[i] !== ''"
+             [class.error]="erreur && digits[i] === ''"
+             type="text"
+             inputmode="numeric"
+             maxlength="1"
+             [(ngModel)]="digits[i]"
+             (input)="onDigitInput($event, i)"
+             (keydown)="onKeyDown($event, i)"
+             placeholder="—">
+    </div>
+
+    <!-- TIMER -->
+    <div class="timer-row">
+      <span *ngIf="!peutRenvoyer">
+        Renvoyer dans <span class="timer-count">{{ timerAffiche }}</span>
+      </span>
+      <span *ngIf="peutRenvoyer">Code expiré ·</span>
+      &nbsp;
+      <button class="resend-btn" [class.active]="peutRenvoyer" (click)="renvoyer()">
+        Renvoyer le code
+      </button>
+    </div>
+
+    <!-- BOUTON VÉRIFIER -->
+    <button class="btn-verify" (click)="verifier()" [disabled]="loading">
+      <span *ngIf="!loading">Vérifier mon identité →</span>
+      <span *ngIf="loading">⏳ Vérification...</span>
+    </button>
+
+    <button class="btn-back" (click)="retour()">← Modifier mon numéro</button>
+
+    <!-- SÉCURITÉ -->
+    <div class="security-row">
+      <div class="sec-item"><div class="sec-dot"></div>Code valide 5 min</div>
+      <div class="sec-item"><div class="sec-dot"></div>Chiffré SSL</div>
+      <div class="sec-item"><div class="sec-dot"></div>3 tentatives max</div>
+    </div>
+
+  </div>
+
+  <!-- SUCCESS OVERLAY -->
+  <div class="success-overlay" [class.show]="success">
+    <div class="success-card">
+      <span class="success-emoji">✅</span>
+      <div class="success-title">Identité vérifiée !</div>
+      <div class="success-sub">
+        Votre compte QuickBite SN est activé. Bienvenue dans la communauté !
+      </div>
+      <button class="btn-continue" (click)="goToAccueil()">
+        Commencer à commander 🍔
+      </button>
+    </div>
+  </div>
+
+</div>

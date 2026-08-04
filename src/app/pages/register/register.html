@@ -1,0 +1,402 @@
+<div class="register-wrap">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="left-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+
+    <div class="left-content">
+      <div class="left-title">Rejoignez<br><em>QuickBite SN</em><br>aujourd'hui !</div>
+      <p class="left-sub">Créez votre compte en 2 minutes et commencez à commander dans 120+ restaurants à Dakar.</p>
+
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-circle sc-1">1</div>
+          <div class="step-info">
+            <div class="s-title">Choisissez votre rôle</div>
+            <div class="s-desc">Client, Restaurant ou Livreur</div>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-circle sc-2">2</div>
+          <div class="step-info">
+            <div class="s-title">Remplissez le formulaire</div>
+            <div class="s-desc">Informations adaptées à votre profil</div>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-circle sc-3">3</div>
+          <div class="step-info">
+            <div class="s-title">Vérifiez votre identité</div>
+            <div class="s-desc">Code OTP par SMS ou email</div>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-circle sc-4">4</div>
+          <div class="step-info">
+            <div class="s-title">Commencez à utiliser</div>
+            <div class="s-desc">Livraison en 30 min · Wave / OM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="promo-card">
+      <div class="p-title">🎁 Offre de bienvenue</div>
+      <div class="p-sub">−20% sur votre première commande</div>
+      <div class="promo-code">BIENVENUE20</div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="tab-switcher">
+      <button class="tab-btn" (click)="goToLogin()">Se connecter</button>
+      <button class="tab-btn active">S'inscrire</button>
+    </div>
+
+    <div class="form-title">Créer un compte 🚀</div>
+    <div class="form-sub">Rejoignez la communauté QuickBite SN</div>
+
+    <!-- ERREUR -->
+    <div class="error-alert" *ngIf="erreur">⚠️ {{ erreur }}</div>
+
+    <!-- ROLE SELECTOR -->
+    <span class="role-label">Je suis un(e)</span>
+    <div class="role-grid">
+      <div class="role-card" [class.selected]="role === 'client'" (click)="selectRole('client')">
+        <span class="role-emoji">🛒</span>
+        <div class="role-name">Client</div>
+        <div class="role-desc">Commander des repas</div>
+      </div>
+      <div class="role-card" [class.selected]="role === 'restaurant'" (click)="selectRole('restaurant')">
+        <span class="role-emoji">🍽️</span>
+        <div class="role-name">Restaurant</div>
+        <div class="role-desc">Vendre mes plats</div>
+      </div>
+      <div class="role-card" [class.selected]="role === 'livreur'" (click)="selectRole('livreur')">
+        <span class="role-emoji">🛵</span>
+        <div class="role-name">Livreur</div>
+        <div class="role-desc">Effectuer des livraisons</div>
+      </div>
+    </div>
+
+    <!-- ══ FORMULAIRE CLIENT ══ -->
+    <div *ngIf="role === 'client'">
+      <div class="role-banner client-banner">
+        🛒 Formulaire Client — Commandez dans 120+ restaurants
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom *</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input class="form-input" type="text" [(ngModel)]="prenom" placeholder="Ibrahima">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom *</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input class="form-input" type="text" [(ngModel)]="nom" placeholder="Faye">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input class="form-input" type="email" [(ngModel)]="email" placeholder="ibrahima@example.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Téléphone *</label>
+        <div class="phone-wrap">
+          <div class="phone-code">🇸🇳 +221 ▾</div>
+          <div class="input-wrap" style="flex:1">
+            <span class="input-icon">📞</span>
+            <input class="form-input" type="tel" [(ngModel)]="telephone" placeholder="77 123 45 67">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Adresse de livraison</label>
+        <div class="input-wrap">
+          <span class="input-icon">📍</span>
+          <input class="form-input" type="text" [(ngModel)]="adresse" placeholder="Dakar, Plateau, Rue 10">
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ FORMULAIRE RESTAURANT ══ -->
+    <div *ngIf="role === 'restaurant'">
+      <div class="role-banner restaurant-banner">
+        🍽️ Formulaire Restaurant — Vendez vos plats sur QuickBite SN
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom du gérant *</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input class="form-input" type="text" [(ngModel)]="prenom" placeholder="Moussa">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom du gérant *</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input class="form-input" type="text" [(ngModel)]="nom" placeholder="Diallo">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom du restaurant *</label>
+        <div class="input-wrap">
+          <span class="input-icon">🍽️</span>
+          <input class="form-input" type="text" [(ngModel)]="nom_restaurant" placeholder="Chez Maman Fatou">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email professionnel *</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input class="form-input" type="email" [(ngModel)]="email" placeholder="contact@restaurant.sn">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Téléphone *</label>
+        <div class="phone-wrap">
+          <div class="phone-code">🇸🇳 +221 ▾</div>
+          <div class="input-wrap" style="flex:1">
+            <span class="input-icon">📞</span>
+            <input class="form-input" type="tel" [(ngModel)]="telephone" placeholder="77 123 45 67">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Adresse du restaurant *</label>
+        <div class="input-wrap">
+          <span class="input-icon">📍</span>
+          <input class="form-input" type="text" [(ngModel)]="adresse" placeholder="Dakar, Plateau, Avenue Bourguiba">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description du restaurant</label>
+        <textarea class="form-input form-textarea" [(ngModel)]="description"
+                  placeholder="Décrivez votre restaurant, votre spécialité..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type de cuisine *</label>
+        <div class="input-wrap">
+          <span class="input-icon">🍜</span>
+          <select class="form-input form-select" [(ngModel)]="type_cuisine">
+            <option value="">Sélectionner</option>
+            <option value="senegalais">🍛 Sénégalais</option>
+            <option value="burgers">🍔 Burgers</option>
+            <option value="pizzas">🍕 Pizzas</option>
+            <option value="poulet">🍗 Poulet</option>
+            <option value="tacos">🌮 Tacos</option>
+            <option value="grillades">🥩 Grillades</option>
+            <option value="salades">🥗 Salades</option>
+            <option value="autre">🍽️ Autre</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Photo du restaurant</label>
+        <div class="upload-zone" (click)="fileInput.click()">
+          <input #fileInput type="file" accept="image/*" style="display:none" (change)="onPhotoChange($event)">
+          <div *ngIf="!photoPreview">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">Cliquez pour ajouter une photo</div>
+            <div class="upload-sub">JPG, PNG · Max 5MB</div>
+          </div>
+          <img *ngIf="photoPreview" [src]="photoPreview" class="photo-preview">
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ FORMULAIRE LIVREUR ══ -->
+    <div *ngIf="role === 'livreur'">
+      <div class="role-banner livreur-banner">
+        🛵 Formulaire Livreur — Gagnez de l'argent en livrant
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom *</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input class="form-input" type="text" [(ngModel)]="prenom" placeholder="Amadou">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom *</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input class="form-input" type="text" [(ngModel)]="nom" placeholder="Diop">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input class="form-input" type="email" [(ngModel)]="email" placeholder="amadou@example.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Téléphone *</label>
+        <div class="phone-wrap">
+          <div class="phone-code">🇸🇳 +221 ▾</div>
+          <div class="input-wrap" style="flex:1">
+            <span class="input-icon">📞</span>
+            <input class="form-input" type="tel" [(ngModel)]="telephone" placeholder="77 123 45 67">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type de véhicule *</label>
+        <div class="vehicule-grid">
+          <div class="vehicule-card" [class.selected]="vehicule === 'moto'" (click)="vehicule='moto'">
+            <span>🛵</span><div>Moto</div>
+          </div>
+          <div class="vehicule-card" [class.selected]="vehicule === 'velo'" (click)="vehicule='velo'">
+            <span>🚲</span><div>Vélo</div>
+          </div>
+          <div class="vehicule-card" [class.selected]="vehicule === 'voiture'" (click)="vehicule='voiture'">
+            <span>🚗</span><div>Voiture</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Photo de profil *</label>
+        <div class="upload-zone" (click)="fileInput2.click()">
+          <input #fileInput2 type="file" accept="image/*" style="display:none" (change)="onPhotoChange($event)">
+          <div *ngIf="!photoPreview">
+            <div class="upload-icon">🤳</div>
+            <div class="upload-text">Photo de profil</div>
+            <div class="upload-sub">JPG, PNG · Max 5MB</div>
+          </div>
+          <img *ngIf="photoPreview" [src]="photoPreview" class="photo-preview">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Photo CNI / Permis *</label>
+        <div class="upload-zone" (click)="fileInput3.click()">
+          <input #fileInput3 type="file" accept="image/*" style="display:none" (change)="onCniChange($event)">
+          <div *ngIf="!cniPreview">
+            <div class="upload-icon">🪪</div>
+            <div class="upload-text">Carte Nationale d'Identité ou Permis</div>
+            <div class="upload-sub">JPG, PNG · Max 5MB</div>
+          </div>
+          <img *ngIf="cniPreview" [src]="cniPreview" class="photo-preview">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Zone de livraison préférée</label>
+        <div class="input-wrap">
+          <span class="input-icon">📍</span>
+          <select class="form-input form-select" [(ngModel)]="zone_livraison">
+            <option value="">Sélectionner une zone</option>
+            <option value="plateau">Plateau</option>
+            <option value="medina">Médina</option>
+            <option value="grand_dakar">Grand Dakar</option>
+            <option value="parcelles">Parcelles Assainies</option>
+            <option value="pikine">Pikine</option>
+            <option value="guediawaye">Guédiawaye</option>
+            <option value="rufisque">Rufisque</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MOT DE PASSE (COMMUN) ══ -->
+    <div class="form-group" style="margin-top: 8px;">
+      <label class="form-label">Mot de passe *</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input class="form-input"
+               [type]="showPassword ? 'text' : 'password'"
+               [(ngModel)]="mot_de_passe"
+               placeholder="Minimum 8 caractères">
+        <button class="eye-btn" (click)="togglePassword()">
+          {{ showPassword ? '🙈' : '👁' }}
+        </button>
+      </div>
+      <div class="strength-bar" *ngIf="mot_de_passe.length > 0">
+        <div class="strength-seg" [style.background]="forceMotDePasse >= 1 ? forceCouleur : ''"></div>
+        <div class="strength-seg" [style.background]="forceMotDePasse >= 2 ? forceCouleur : ''"></div>
+        <div class="strength-seg" [style.background]="forceMotDePasse >= 3 ? forceCouleur : ''"></div>
+        <div class="strength-seg" [style.background]="forceMotDePasse >= 4 ? forceCouleur : ''"></div>
+        <div class="strength-seg" [style.background]="forceMotDePasse >= 5 ? forceCouleur : ''"></div>
+      </div>
+      <div class="strength-text" *ngIf="mot_de_passe.length > 0" [style.color]="forceCouleur">
+        Force : {{ forceLabel }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Confirmer le mot de passe *</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input class="form-input"
+               [type]="showConfirm ? 'text' : 'password'"
+               [(ngModel)]="confirmer_mot_de_passe"
+               placeholder="Répétez votre mot de passe">
+        <button class="eye-btn" (click)="toggleConfirm()">
+          {{ showConfirm ? '🙈' : '👁' }}
+        </button>
+      </div>
+      <div class="match-ok" *ngIf="confirmer_mot_de_passe.length > 0 && mot_de_passe === confirmer_mot_de_passe">
+        ✅ Les mots de passe correspondent
+      </div>
+      <div class="match-error" *ngIf="confirmer_mot_de_passe.length > 0 && mot_de_passe !== confirmer_mot_de_passe">
+        ❌ Les mots de passe ne correspondent pas
+      </div>
+    </div>
+
+    <!-- CONDITIONS -->
+    <div class="check-row">
+      <input type="checkbox" id="conditions" [(ngModel)]="accepter_conditions">
+      <label for="conditions">
+        J'accepte les <a href="#">conditions d'utilisation</a> et la
+        <a href="#">politique de confidentialité</a> de QuickBite SN
+      </label>
+    </div>
+
+    <!-- SUBMIT -->
+    <button class="btn-submit" (click)="onSubmit()" [disabled]="loading">
+      <span *ngIf="!loading">
+        {{ role === 'client' ? 'Créer mon compte client 🛒' :
+           role === 'restaurant' ? 'Inscrire mon restaurant 🍽️' :
+           'Devenir livreur 🛵' }}
+      </span>
+      <span *ngIf="loading">⏳ Création en cours...</span>
+    </button>
+
+    <div class="divider"><span>ou continuer avec</span></div>
+
+    <button class="btn-google">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continuer avec Google
+    </button>
+
+    <div class="login-link">
+      Déjà un compte ? <a (click)="goToLogin()">Se connecter</a>
+    </div>
+
+    <div class="security-badge">
+      <div class="sec-dot"></div>
+      <span>Inscription sécurisée SSL · JWT · Données protégées</span>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,404 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item" (click)="naviguer('commandes')"><span class="nav-icon">📋</span>Commandes</a>
+      <a class="nav-item" (click)="naviguer('menu')"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item" (click)="naviguer('notifications')"><span class="nav-icon">🔔</span>Notifications</a>
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" (click)="naviguer('utilisateurs')"><span class="nav-icon">👥</span>Utilisateurs</a>
+      <a class="nav-item" (click)="naviguer('livreurs')"><span class="nav-icon">🛵</span>Livreurs</a>
+      <a class="nav-item" (click)="naviguer('finances')"><span class="nav-icon">💰</span>Finances</a>
+      <a class="nav-item active"><span class="nav-icon">📍</span>Zones livraison</a>
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item" (click)="naviguer('statistiques')"><span class="nav-icon">📈</span>Statistiques</a>
+      <a class="nav-item" (click)="naviguer('avis')"><span class="nav-icon">⭐</span>Avis clients</a>
+      <a class="nav-item" (click)="naviguer('rapports')"><span class="nav-icon">📄</span>Rapports PDF</a>
+      <div class="nav-section">Système</div>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span>Paramètres</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>Déconnexion</a>
+    </div>
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Zones de livraison 📍</div>
+        <div class="ph-sub">Définissez le prix de livraison de chaque zone de Dakar</div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-sm" (click)="chargerZones()">🔄 Actualiser</button>
+        <button class="btn-sm" (click)="exporterPDF()">📄 Export PDF</button>
+        <button class="btn-sm" (click)="exporterExcel()">📊 Export Excel</button>
+        <button class="btn-primary" (click)="ouvrirCreation()">+ Nouvelle zone</button>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="alert-success" *ngIf="succes">{{ succes }}</div>
+    <div class="alert-error" *ngIf="erreur">⚠️ {{ erreur }}</div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="sc">
+        <div class="sc-val" style="color:#FFFFFF">{{ stats.zones }}</div>
+        <div class="sc-lbl">Zones actives</div>
+      </div>
+      <div class="sc">
+        <div class="sc-val" style="color:#22A86A">{{ stats.surface }} km²</div>
+        <div class="sc-lbl">Surface couverte</div>
+      </div>
+      <div class="sc">
+        <div class="sc-val" style="color:#F5A623">{{ stats.delai }} min</div>
+        <div class="sc-lbl">Délai moyen</div>
+      </div>
+      <div class="sc">
+        <div class="sc-val" style="color:#FFD700">{{ stats.commandes }}</div>
+        <div class="sc-lbl">Commandes livrées</div>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des zones...</span>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="empty-state" *ngIf="!loading && zones.length === 0">
+      <div style="font-size:56px;margin-bottom:14px">📍</div>
+      <div style="font-size:18px;font-weight:700;color:#FFFFFF;margin-bottom:8px">
+        Aucune zone configurée
+      </div>
+      <div style="font-size:13px;color:#6B8F77;margin-bottom:22px">
+        Créez vos zones et définissez le prix de livraison de chacune
+      </div>
+      <button class="btn-primary" (click)="ouvrirCreation()">+ Créer ma première zone</button>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="content-layout" *ngIf="!loading && zones.length > 0">
+
+      <!-- CARTE -->
+      <div class="map-big">
+        <div class="map-bg"></div>
+        <div class="map-grid-lines"></div>
+
+        <ng-container *ngIf="vueActive !== 'heatmap'">
+          <div *ngFor="let z of zones"
+               class="zone-circle"
+               [ngClass]="getZoneCircleClass(z.couleur)"
+               [style.top]="z.top + '%'"
+               [style.left]="z.left + '%'"
+               [style.width]="z.statut === 'inactive' ? '110px' : '190px'"
+               [style.height]="z.statut === 'inactive' ? '110px' : '190px'"
+               [style.opacity]="z.selected ? '1' : '0.5'"
+               (click)="selectionnerZone(z)">
+          </div>
+        </ng-container>
+
+        <div class="heatmap-overlay" *ngIf="vueActive === 'heatmap'">
+          <div class="hm-hot" style="top:42%;left:45%"></div>
+          <div class="hm-warm" style="top:30%;left:65%"></div>
+          <div class="hm-cool" style="top:60%;left:30%"></div>
+        </div>
+
+        <div class="map-resto-pin" style="top:42%;left:45%">🍔</div>
+
+        <div *ngFor="let z of zones"
+             class="map-label"
+             [class.label-active]="z.selected"
+             [style.top]="(z.top - 9) + '%'"
+             [style.left]="z.left + '%'">
+          {{ z.nom }} · {{ formaterMontant(z.frais_livraison) }}
+        </div>
+
+        <ng-container *ngIf="vueActive === 'livreurs' || vueActive === 'zones'">
+          <div *ngFor="let l of livreurs_carte"
+               class="livreur-pin"
+               [style.top]="l.top + '%'"
+               [style.left]="l.left + '%'"
+               [style.animation-delay]="l.delay">
+            🛵
+          </div>
+        </ng-container>
+
+        <div class="map-toolbar">
+          <button class="mt-btn" [class.active]="vueActive === 'zones'"
+                  (click)="changerVue('zones')">📍 Zones</button>
+          <button class="mt-btn" [class.active]="vueActive === 'livreurs'"
+                  (click)="changerVue('livreurs')">🛵 Livreurs</button>
+          <button class="mt-btn" [class.active]="vueActive === 'heatmap'"
+                  (click)="changerVue('heatmap')">🔥 Heatmap</button>
+        </div>
+
+        <div class="map-legend">
+          <div class="ml-item">
+            <div class="ml-dot" style="background:#22A86A"></div>
+            <span>Active</span>
+          </div>
+          <div class="ml-item">
+            <div class="ml-dot" style="background:#F5A623"></div>
+            <span>Limitée</span>
+          </div>
+          <div class="ml-item">
+            <div class="ml-dot" style="background:#6B8F77"></div>
+            <span>Inactive</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- LISTE ZONES -->
+      <div class="zones-list">
+        <div class="zone-card"
+             *ngFor="let z of zones"
+             [class.selected]="z.selected"
+             [class.inactive-card]="z.statut === 'inactive'"
+             (click)="selectionnerZone(z)">
+
+          <div class="zc-header">
+            <div class="zc-color" [style.background]="z.couleur"></div>
+            <div class="zc-name">{{ z.nom }}</div>
+            <span class="zc-status" [ngClass]="getStatutClass(z.statut)">
+              {{ getStatutLabel(z.statut) }}
+            </span>
+          </div>
+
+          <!-- PRIX EN GRAND -->
+          <div class="zc-prix-box">
+            <div class="zpb-label">Prix de livraison</div>
+            <div class="zpb-val">{{ formaterMontant(z.frais_livraison) }}</div>
+            <div class="zpb-sub" *ngIf="z.livraison_gratuite_des > 0">
+              Offerte dès {{ formaterMontant(z.livraison_gratuite_des) }}
+            </div>
+          </div>
+
+          <div class="zc-stats">
+            <div class="zcs-item">
+              <div class="zcs-val" style="color:#F5A623">{{ z.commandes || 0 }}</div>
+              <div class="zcs-lbl">Commandes</div>
+            </div>
+            <div class="zcs-item">
+              <div class="zcs-val" style="color:#22A86A">{{ getDelai(z) }}</div>
+              <div class="zcs-lbl">Délai</div>
+            </div>
+            <div class="zcs-item">
+              <div class="zcs-val" style="color:#FFD700">{{ z.rayon_km }} km</div>
+              <div class="zcs-lbl">Rayon</div>
+            </div>
+          </div>
+
+          <!-- QUARTIERS -->
+          <div class="zc-quartiers" *ngIf="getQuartiers(z).length > 0">
+            <span class="zq-tag" *ngFor="let q of getQuartiers(z)">{{ q }}</span>
+          </div>
+
+          <div class="zc-fees">💰 {{ getResumeTarif(z) }}</div>
+
+          <!-- ACTIONS -->
+          <div class="zc-actions">
+            <button class="za-btn za-edit" (click)="ouvrirModification(z, $event)">
+              ✏️ Modifier
+            </button>
+            <button class="za-btn za-toggle"
+                    [class.za-on]="z.statut !== 'active'"
+                    (click)="toggleActivation(z, $event)">
+              {{ z.statut === 'active' ? '○ Désactiver' : '● Activer' }}
+            </button>
+            <button class="za-btn za-del" (click)="supprimerZone(z, $event)">🗑</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+  <!-- ══ MODAL CRÉER / MODIFIER ══ -->
+  <div class="modal-overlay" [class.show]="showModal"
+       (click)="$event.target === $event.currentTarget && fermerModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">
+          {{ modeEdition ? '✏️ Modifier la zone' : '📍 Nouvelle zone de livraison' }}
+        </div>
+        <button class="modal-close" (click)="fermerModal()">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="error-alert" *ngIf="erreurModal">⚠️ {{ erreurModal }}</div>
+
+        <div class="edit-banner" *ngIf="modeEdition">
+          Vous modifiez <strong>{{ zoneEnEdition?.nom }}</strong> ·
+          Prix actuel : <strong>{{ formaterMontant(zoneEnEdition?.frais_livraison) }}</strong>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nom de la zone *</label>
+          <input class="form-input" type="text" autocomplete="off"
+                 [(ngModel)]="form.nom"
+                 placeholder="Ex : Zone 5 — Almadies">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input class="form-input" type="text" autocomplete="off"
+                 [(ngModel)]="form.description"
+                 placeholder="Ex : Almadies, Ngor et Yoff">
+        </div>
+
+        <!-- ══ PRIX ══ -->
+        <div class="prix-section">
+          <div class="ps-title">💰 Tarification</div>
+
+          <div class="form-group">
+            <label class="form-label">Prix de livraison (F CFA) *</label>
+            <input class="form-input form-input-big" type="number" min="0" step="100"
+                   [(ngModel)]="form.frais_livraison"
+                   placeholder="1000">
+            <div class="form-hint">
+              Ce montant sera facturé au client et versé au livreur pour cette zone.
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Commande minimum (F)</label>
+              <input class="form-input" type="number" min="0" step="500"
+                     [(ngModel)]="form.min_commande"
+                     placeholder="0">
+              <div class="form-hint">0 = pas de minimum</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Livraison offerte dès (F)</label>
+              <input class="form-input" type="number" min="0" step="1000"
+                     [(ngModel)]="form.livraison_gratuite_des"
+                     placeholder="0">
+              <div class="form-hint">0 = jamais gratuite</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ DÉLAIS ══ -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Délai min (min)</label>
+            <input class="form-input" type="number" min="5" max="120"
+                   [(ngModel)]="form.delai_min" placeholder="20">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Délai max (min)</label>
+            <input class="form-input" type="number" min="5" max="180"
+                   [(ngModel)]="form.delai_max" placeholder="35">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Rayon (km)</label>
+            <input class="form-input" type="number" min="0" step="0.5"
+                   [(ngModel)]="form.rayon_km" placeholder="3.5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statut</label>
+            <select class="form-input" [(ngModel)]="form.statut">
+              <option value="active">● Active</option>
+              <option value="limitee">⚡ Limitée</option>
+              <option value="inactive">○ Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ══ QUARTIERS ══ -->
+        <div class="form-group">
+          <label class="form-label">Quartiers couverts</label>
+          <input class="form-input" type="text" autocomplete="off"
+                 [(ngModel)]="form.quartiers"
+                 placeholder="Almadies,Ngor,Yoff,Mamelles">
+          <div class="form-hint">
+            Séparez par des virgules. Sert à détecter la zone depuis l'adresse du client.
+          </div>
+        </div>
+
+        <!-- ══ COULEUR ══ -->
+        <div class="form-group">
+          <label class="form-label">Couleur sur la carte</label>
+          <div class="color-picker">
+            <div class="cp-opt" style="background:#22A86A"
+                 [class.selected]="form.couleur === '#22A86A'"
+                 (click)="form.couleur = '#22A86A'"></div>
+            <div class="cp-opt" style="background:#F5A623"
+                 [class.selected]="form.couleur === '#F5A623'"
+                 (click)="form.couleur = '#F5A623'"></div>
+            <div class="cp-opt" style="background:#2563EB"
+                 [class.selected]="form.couleur === '#2563EB'"
+                 (click)="form.couleur = '#2563EB'"></div>
+            <div class="cp-opt" style="background:#FFD700"
+                 [class.selected]="form.couleur === '#FFD700'"
+                 (click)="form.couleur = '#FFD700'"></div>
+            <div class="cp-opt" style="background:#E74C3C"
+                 [class.selected]="form.couleur === '#E74C3C'"
+                 (click)="form.couleur = '#E74C3C'"></div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          💡 Le prix défini ici s'applique automatiquement à toute commande de cette zone.
+          Le livreur assigné touchera exactement ce montant.
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="fermerModal()">Annuler</button>
+        <button class="btn-save" (click)="sauvegarder()" [disabled]="loadingSave">
+          <span *ngIf="!loadingSave">
+            {{ modeEdition ? '💾 Enregistrer les modifications' : '📍 Créer la zone' }}
+          </span>
+          <span *ngIf="loadingSave">⏳ Enregistrement...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

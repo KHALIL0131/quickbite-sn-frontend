@@ -1,0 +1,260 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item" (click)="naviguer('commandes')"><span class="nav-icon">📋</span>Commandes</a>
+      <a class="nav-item" (click)="naviguer('menu')"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item active"><span class="nav-icon">🔔</span>Notifications
+        <span class="nav-badge" *ngIf="nonLuesCount > 0">{{ nonLuesCount }}</span>
+      </a>
+
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" (click)="naviguer('utilisateurs')"><span class="nav-icon">👥</span>Utilisateurs</a>
+      <a class="nav-item" (click)="naviguer('livreurs')"><span class="nav-icon">🛵</span>Livreurs</a>
+      <a class="nav-item" (click)="naviguer('finances')"><span class="nav-icon">💰</span>Finances</a>
+      <a class="nav-item" (click)="naviguer('zones')"><span class="nav-icon">📍</span>Zones livraison</a>
+
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item" (click)="naviguer('statistiques')"><span class="nav-icon">📈</span>Statistiques</a>
+      <a class="nav-item" (click)="naviguer('avis')"><span class="nav-icon">⭐</span>Avis clients</a>
+      <a class="nav-item" (click)="naviguer('rapports')"><span class="nav-icon">📄</span>Rapports PDF</a>
+
+      <div class="nav-section">Système</div>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span>Paramètres</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>Déconnexion</a>
+    </div>
+
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Notifications 🔔</div>
+        <div class="ph-sub">{{ nonLuesCount }} non lues · Temps réel activé</div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-sm" (click)="toutMarquerLu()">✅ Tout marquer lu</button>
+        <button class="btn-sm" (click)="effacerTout()">🗑 Effacer tout</button>
+      </div>
+    </div>
+
+    <!-- LIVE BANNER -->
+    <div class="live-bar">
+      <div class="live-dot"></div>
+      <span class="live-text">
+        <strong>Temps réel activé</strong> · Les notifications arrivent automatiquement
+      </span>
+      <span class="live-status">● Actif</span>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="notif-layout">
+
+      <!-- GAUCHE : LISTE -->
+      <div>
+        <!-- ONGLETS -->
+        <div class="ntabs">
+          <div class="ntab" [class.active]="ongletActif === 'toutes'" (click)="changerOnglet('toutes')">
+            Toutes <span class="ntab-cnt">{{ notifications.length }}</span>
+          </div>
+          <div class="ntab" [class.active]="ongletActif === 'non-lues'" (click)="changerOnglet('non-lues')">
+            Non lues <span class="ntab-cnt">{{ nonLuesCount }}</span>
+          </div>
+          <div class="ntab" [class.active]="ongletActif === 'commandes'" (click)="changerOnglet('commandes')">
+            Commandes
+          </div>
+          <div class="ntab" [class.active]="ongletActif === 'alertes'" (click)="changerOnglet('alertes')">
+            Alertes
+          </div>
+        </div>
+
+        <!-- LOADING -->
+        <div class="loading-state" *ngIf="loading">
+          <div class="spinner"></div>
+          <span>Chargement...</span>
+        </div>
+
+        <!-- LISTE NOTIFICATIONS -->
+        <div class="notif-card" *ngIf="!loading">
+          <div class="notif-list">
+
+            <!-- VIDE -->
+            <div class="empty-state" *ngIf="notificationsFiltrees.length === 0">
+              <div style="font-size:48px;margin-bottom:12px">🔔</div>
+              <div style="font-size:16px;font-weight:700;color:#FFFFFF;margin-bottom:6px">Aucune notification</div>
+              <div style="font-size:13px;color:#6B8F77">Les notifications apparaîtront ici</div>
+            </div>
+
+            <div class="notif-item"
+                 *ngFor="let n of notificationsFiltrees"
+                 [class.unread]="!n.lu"
+                 (click)="marquerLu(n)">
+
+              <div class="ni-icon" [ngClass]="getIconClass(n.type)">
+                {{ getIconEmoji(n.type) }}
+              </div>
+
+              <div class="ni-body">
+                <div class="ni-title">{{ n.titre }}</div>
+                <div class="ni-text">{{ n.texte }}</div>
+                <div class="ni-time">{{ n.temps }}</div>
+                <div class="ni-actions" *ngIf="n.type === 'order' || n.type === 'delivery'">
+                  <button class="ni-btn primary" (click)="voirCommande(n.commande_id); $event.stopPropagation()">
+                    Voir la commande
+                  </button>
+                </div>
+              </div>
+
+              <div class="ni-unread-dot" *ngIf="!n.lu"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- DROITE : PANEL -->
+      <div class="right-panel">
+
+        <!-- TOAST -->
+        <div class="rp-card toast-card" *ngIf="toastNotif">
+          <div class="rpc-title">🔔 Notification en direct</div>
+          <div class="toast-demo">
+            <div class="toast-icon">{{ getIconEmoji(toastNotif.type) }}</div>
+            <div>
+              <div class="toast-title">{{ toastNotif.titre }}</div>
+              <div class="toast-text">{{ toastNotif.texte }}</div>
+            </div>
+            <button class="toast-close" (click)="fermerToast()">✕</button>
+          </div>
+          <div class="toast-bar"></div>
+        </div>
+
+        <!-- STATS -->
+        <div class="rp-card">
+          <div class="rpc-title">📊 Résumé</div>
+          <div class="stats-mini">
+            <div class="sm-card">
+              <div class="sm-val" style="color:#F5A623">{{ stats.commandes }}</div>
+              <div class="sm-lbl">Commandes</div>
+            </div>
+            <div class="sm-card">
+              <div class="sm-val" style="color:#22A86A">{{ nonLuesCount }}</div>
+              <div class="sm-lbl">Non lues</div>
+            </div>
+            <div class="sm-card">
+              <div class="sm-val" style="color:#FFD700">{{ notifications.length }}</div>
+              <div class="sm-lbl">Total</div>
+            </div>
+            <div class="sm-card">
+              <div class="sm-val" style="color:#E74C3C">0</div>
+              <div class="sm-lbl">Alertes</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRÉFÉRENCES -->
+        <div class="rp-card">
+          <div class="rpc-title">⚙️ Préférences</div>
+          <div class="toggle-list">
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">Commandes</div>
+                <div class="tr-desc">Son + push</div>
+              </div>
+              <div class="toggle-track" [class.on]="prefs.commandes" [class.off]="!prefs.commandes"
+                   (click)="prefs.commandes = !prefs.commandes">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">Livraisons</div>
+                <div class="tr-desc">Temps réel</div>
+              </div>
+              <div class="toggle-track" [class.on]="prefs.livraisons" [class.off]="!prefs.livraisons"
+                   (click)="prefs.livraisons = !prefs.livraisons">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">Avis clients</div>
+                <div class="tr-desc">Nouveau avis</div>
+              </div>
+              <div class="toggle-track" [class.on]="prefs.avis" [class.off]="!prefs.avis"
+                   (click)="prefs.avis = !prefs.avis">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">Alertes stock</div>
+                <div class="tr-desc">Stock bas</div>
+              </div>
+              <div class="toggle-track" [class.on]="prefs.alertes" [class.off]="!prefs.alertes"
+                   (click)="prefs.alertes = !prefs.alertes">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">Email quotidien</div>
+                <div class="tr-desc">Résumé 18h</div>
+              </div>
+              <div class="toggle-track" [class.on]="prefs.email" [class.off]="!prefs.email"
+                   (click)="prefs.email = !prefs.email">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

@@ -1,0 +1,324 @@
+<div class="panier-wrap">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a class="nav-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </a>
+    <button class="btn-back" (click)="goToMenu()">← Continuer mes achats</button>
+  </nav>
+
+  <!-- STEPS -->
+  <div class="steps-bar">
+    <div class="step-item">
+      <div class="step-circle sc-active">1</div>
+      <div class="step-label">Panier</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-circle sc-pending">2</div>
+      <div class="step-label muted">Livraison</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-circle sc-pending">3</div>
+      <div class="step-label muted">Paiement</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+      <div class="step-circle sc-pending">4</div>
+      <div class="step-label muted">Confirmation</div>
+    </div>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="cart-layout">
+
+    <!-- GAUCHE -->
+    <div class="cart-left">
+
+      <div class="cart-header">
+        <div>
+          <div class="cart-section-title">Mon panier 🛒</div>
+          <div class="cart-section-sub">
+            {{ nombreArticles }} article{{ nombreArticles > 1 ? 's' : '' }} ·
+            {{ restaurants.length }} restaurant{{ restaurants.length > 1 ? 's' : '' }}
+          </div>
+        </div>
+        <button class="btn-vider" (click)="viderPanier()" *ngIf="items.length > 0">
+          🗑 Vider le panier
+        </button>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="alert-error" *ngIf="erreur">⚠️ {{ erreur }}</div>
+      <div class="alert-success" *ngIf="succes">{{ succes }}</div>
+
+      <!-- PANIER VIDE -->
+      <div class="panier-vide" *ngIf="items.length === 0">
+        <div class="pv-emoji">🛒</div>
+        <div class="pv-titre">Votre panier est vide</div>
+        <div class="pv-sub">Ajoutez des plats délicieux depuis notre menu</div>
+        <button class="btn-goto-menu" (click)="goToMenu()">🍽️ Voir le menu</button>
+      </div>
+
+      <!-- ARTICLES -->
+      <div *ngFor="let groupe of restaurants" class="resto-groupe">
+        <div class="resto-group-label">🏪 {{ groupe.nom }}</div>
+
+        <div class="cart-item" *ngFor="let item of $any(groupe.items)">
+          <div class="item-img">
+            <img *ngIf="item.photo" [src]="getPlatPhotoUrl(item.photo)" [alt]="item.nom" class="item-photo">
+            <span *ngIf="!item.photo" class="item-emoji-big">{{ item.emoji || '🍽️' }}</span>
+          </div>
+          <div class="item-info">
+            <div class="item-name">{{ item.nom }}</div>
+            <div class="item-resto">🏪 {{ item.restaurant_nom }}</div>
+            <div class="item-actions">
+              <div class="qty-row">
+                <button class="q-btn" (click)="decrementer(item)">−</button>
+                <div class="q-num">{{ item.quantite }}</div>
+                <button class="q-btn" (click)="incrementer(item)">+</button>
+              </div>
+              <div class="item-price">{{ formaterMontant(item.prix * item.quantite) }}</div>
+              <button class="remove-btn" (click)="supprimerItem(item)" title="Supprimer">🗑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CODE PROMO -->
+      <div class="promo-box" *ngIf="items.length > 0">
+        <div class="promo-label">🎁 Code promo</div>
+        <div class="promo-row">
+          <input class="promo-input" type="text" autocomplete="off" [(ngModel)]="codePromo"
+                 placeholder="Ex : BIENVENUE20"
+                 (keyup.enter)="appliquerPromo()">
+          <button class="btn-apply" (click)="appliquerPromo()">Appliquer</button>
+        </div>
+        <div class="promo-msg" *ngIf="promoMessage"
+             [class.success]="promoAppliquee"
+             [class.error]="!promoAppliquee && promoMessage">
+          {{ promoMessage }}
+        </div>
+      </div>
+
+      <!-- ══ ZONE DE LIVRAISON ══ -->
+      <div class="zone-box" *ngIf="items.length > 0 && modeLivraison === 'domicile'">
+        <div class="promo-label">📍 Zone de livraison *</div>
+
+        <div class="zone-loading" *ngIf="loadingZones">
+          <div class="mini-spinner"></div>
+          <span>Chargement des zones...</span>
+        </div>
+
+        <div class="zone-empty" *ngIf="!loadingZones && zones.length === 0">
+          ⚠️ Aucune zone configurée. Contactez le restaurant directement.
+        </div>
+
+        <select class="zone-select" *ngIf="!loadingZones && zones.length > 0"
+                [(ngModel)]="zoneChoisie" (change)="onZoneChange()">
+          <option value="">— Choisissez votre zone —</option>
+          <option *ngFor="let z of zones" [value]="z.id">
+            {{ z.nom }} · {{ formaterMontant(z.frais_livraison) }}
+          </option>
+          <option value="autre">❓ Ma zone n'est pas dans la liste</option>
+        </select>
+
+        <!-- DÉTAIL DE LA ZONE CHOISIE -->
+        <div class="zone-detail" *ngIf="zoneActive">
+          <div class="zd-row">
+            <span class="zd-lbl">Prix de livraison</span>
+            <span class="zd-val orange">{{ formaterMontant(zoneActive.frais_livraison) }}</span>
+          </div>
+          <div class="zd-row">
+            <span class="zd-lbl">Délai estimé</span>
+            <span class="zd-val">{{ zoneActive.delai_min }}–{{ zoneActive.delai_max }} min</span>
+          </div>
+          <div class="zd-row" *ngIf="minimumZone > 0">
+            <span class="zd-lbl">Commande minimum</span>
+            <span class="zd-val">{{ formaterMontant(minimumZone) }}</span>
+          </div>
+          <div class="zd-row" *ngIf="seuilGratuite > 0">
+            <span class="zd-lbl">Livraison offerte dès</span>
+            <span class="zd-val green">{{ formaterMontant(seuilGratuite) }}</span>
+          </div>
+          <div class="zd-quartiers" *ngIf="zoneActive.quartiers">
+            📌 {{ zoneActive.quartiers }}
+          </div>
+        </div>
+
+        <!-- ALERTE MINIMUM -->
+        <div class="zone-warning" *ngIf="zoneActive && !minimumAtteint">
+          ⚠️ Il manque <strong>{{ formaterMontant(manqueMinimum) }}</strong>
+          pour atteindre le minimum de cette zone
+        </div>
+
+        <!-- ENCOURAGEMENT GRATUITÉ -->
+        <div class="zone-tip" *ngIf="zoneActive && minimumAtteint && manqueGratuite > 0">
+          💡 Ajoutez <strong>{{ formaterMontant(manqueGratuite) }}</strong>
+          pour bénéficier de la livraison offerte
+        </div>
+
+        <div class="zone-tip success" *ngIf="livraisonEstGratuite">
+          🎉 Livraison offerte sur cette commande !
+        </div>
+
+        <!-- ZONE NON LISTÉE -->
+        <div class="zone-autre" *ngIf="zoneNonListee">
+          <div class="za-titre">📝 Indiquez votre quartier</div>
+          <input class="promo-input" type="text" autocomplete="off"
+                 [(ngModel)]="quartierSaisi"
+                 placeholder="Ex : Keur Massar, Rufisque, Yeumbeul...">
+          <div class="za-info">
+            Un agent vous contactera pour vous communiquer le prix de livraison
+            de votre zone avant de valider la commande.
+          </div>
+        </div>
+      </div>
+
+      <!-- ADRESSE -->
+      <div class="adresse-box" *ngIf="items.length > 0 && modeLivraison === 'domicile'">
+        <div class="promo-label">🏠 Adresse complète *</div>
+        <input class="promo-input" type="text" autocomplete="off"
+               [(ngModel)]="adresseLivraison"
+               (input)="onAdresseChange()"
+               placeholder="Ex : Plateau, Rue 10 Angle Carnot, Villa 4">
+        <div class="adresse-hint">
+          Soyez précis : quartier, rue, numéro, point de repère
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DROITE — RÉCAPITULATIF -->
+    <div class="summary-card" *ngIf="items.length > 0">
+      <div class="sum-title">Récapitulatif</div>
+
+      <!-- MODE LIVRAISON -->
+      <div class="section-label">Mode de livraison</div>
+      <div class="delivery-opts">
+        <div class="del-opt" [class.selected]="modeLivraison === 'domicile'"
+             (click)="modeLivraison = 'domicile'">
+          <div class="del-left">
+            <div class="del-radio"></div>
+            <div>
+              <div class="del-name">🛵 Livraison à domicile</div>
+              <div class="del-desc">{{ delaiZone }}</div>
+            </div>
+          </div>
+          <div class="del-price"
+               [class.gratuit]="livraisonEstGratuite"
+               [class.attente]="!zoneActive && !zoneNonListee">
+            {{ libelleLivraison }}
+          </div>
+        </div>
+        <div class="del-opt" [class.selected]="modeLivraison === 'emporter'"
+             (click)="modeLivraison = 'emporter'">
+          <div class="del-left">
+            <div class="del-radio"></div>
+            <div>
+              <div class="del-name">🏃 À emporter</div>
+              <div class="del-desc">Prêt dans 15 min</div>
+            </div>
+          </div>
+          <div class="del-price gratuit">Gratuit</div>
+        </div>
+      </div>
+
+      <!-- MODE PAIEMENT -->
+      <div class="section-label">Mode de paiement</div>
+      <div class="pay-grid">
+        <div class="pay-opt" [class.selected]="modePaiement === 'wave'"
+             (click)="modePaiement = 'wave'">
+          <span class="pay-emoji">📱</span>
+          <div class="pay-name">Wave</div>
+        </div>
+        <div class="pay-opt" [class.selected]="modePaiement === 'orange_money'"
+             (click)="modePaiement = 'orange_money'">
+          <span class="pay-emoji">🟠</span>
+          <div class="pay-name">Orange Money</div>
+        </div>
+        <div class="pay-opt" [class.selected]="modePaiement === 'carte'"
+             (click)="modePaiement = 'carte'">
+          <span class="pay-emoji">💳</span>
+          <div class="pay-name">Carte</div>
+        </div>
+        <div class="pay-opt" [class.selected]="modePaiement === 'especes'"
+             (click)="modePaiement = 'especes'">
+          <span class="pay-emoji">💵</span>
+          <div class="pay-name">Espèces</div>
+        </div>
+      </div>
+
+      <!-- TOTAUX -->
+      <div class="total-rows">
+        <div class="t-row">
+          <span>Sous-total ({{ nombreArticles }} articles)</span>
+          <span>{{ formaterMontant(sousTotal) }}</span>
+        </div>
+        <div class="t-row" *ngIf="promoAppliquee">
+          <span class="t-green">🎁 Réduction ({{ promoReduction }}%)</span>
+          <span class="t-red">−{{ formaterMontant(montantReduction) }}</span>
+        </div>
+        <div class="t-row">
+          <span>
+            Frais de livraison
+            <span class="t-zone" *ngIf="zoneActive"> · {{ zoneActive.nom }}</span>
+          </span>
+          <span [class.t-green]="livraisonEstGratuite || modeLivraison === 'emporter'"
+                [class.t-orange]="fraisLivraison > 0"
+                [class.t-muted]="!zoneActive && !zoneNonListee && modeLivraison === 'domicile'">
+            {{ libelleLivraison }}
+          </span>
+        </div>
+        <div class="t-row total-final">
+          <span>Total</span>
+          <span class="t-price">{{ formaterMontant(total) }}</span>
+        </div>
+        <div class="t-note" *ngIf="zoneNonListee">
+          Le prix de livraison sera ajouté après confirmation par téléphone
+        </div>
+      </div>
+
+      <!-- BLOCAGES -->
+      <div class="blocage" *ngIf="modeLivraison === 'domicile' && !zoneChoisie">
+        📍 Choisissez votre zone de livraison pour continuer
+      </div>
+      <div class="blocage" *ngIf="modeLivraison === 'domicile' && zoneChoisie && !adresseLivraison.trim()">
+        🏠 Entrez votre adresse complète
+      </div>
+      <div class="blocage" *ngIf="zoneNonListee && !quartierSaisi.trim()">
+        📝 Indiquez le nom de votre quartier
+      </div>
+      <div class="blocage rouge" *ngIf="zoneActive && !minimumAtteint">
+        ⚠️ Minimum {{ formaterMontant(minimumZone) }} pour cette zone ·
+        Il manque {{ formaterMontant(manqueMinimum) }}
+      </div>
+
+      <!-- BOUTONS -->
+      <button class="btn-checkout" (click)="passerCommande()"
+              [disabled]="loadingCommande || !peutCommander">
+        <span *ngIf="!loadingCommande">🛵 Commander — {{ formaterMontant(total) }}</span>
+        <span *ngIf="loadingCommande">⏳ Envoi en cours...</span>
+      </button>
+
+      <button class="btn-whatsapp" (click)="commanderViaWhatsApp()">
+        💬 Commander via WhatsApp
+      </button>
+
+      <button class="btn-continue" (click)="goToMenu()">
+        ← Continuer mes achats
+      </button>
+
+      <div class="security-row">
+        <span>🔒 Paiement sécurisé</span>
+        <span>🛵 Livraison rapide</span>
+        <span>✅ Garanti QuickBite</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>

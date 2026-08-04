@@ -1,0 +1,280 @@
+<div class="menu-wrap">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+
+    <div class="nav-search">
+      <input type="text" [(ngModel)]="searchQuery"
+             placeholder="Chercher un restaurant ou un plat..."
+             (input)="onSearch()">
+    </div>
+
+    <div class="nav-right">
+      <button class="nav-msg-btn" *ngIf="utilisateur" (click)="goToMessagerie()">💬</button>
+      <div class="nav-location">
+        📍
+        <div>
+          <div class="nl-label">Livraison à</div>
+          <strong>Dakar, Plateau</strong>
+        </div>
+        <span>▾</span>
+      </div>
+      <button class="nav-cart" (click)="goToPanier()">
+        🛒 Panier
+        <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+      </button>
+      <div class="nav-avatar" *ngIf="utilisateur" (click)="goToProfil()">
+        {{ getInitiales() }}
+      </div>
+      <button class="btn-login" *ngIf="!utilisateur" (click)="goToLogin()">Connexion</button>
+    </div>
+
+    <button class="burger" (click)="menuOpen = !menuOpen">
+      {{ menuOpen ? '✕' : '☰' }}
+    </button>
+  </nav>
+
+  <!-- MENU MOBILE -->
+  <div class="mobile-menu" [class.open]="menuOpen">
+    <a class="mm-link" (click)="goToAccueil(); menuOpen=false">🏠 Accueil</a>
+    <a class="mm-link active">🍽️ Menu</a>
+    <a class="mm-link" (click)="goToAPropos(); menuOpen=false">ℹ️ À propos</a>
+    <div class="mm-divider"></div>
+    <div class="mm-search">
+      <input type="text" [(ngModel)]="searchQuery"
+             placeholder="Rechercher..."
+             (input)="onSearch(); menuOpen=false">
+    </div>
+    <button class="mm-btn" (click)="goToPanier(); menuOpen=false">
+      🛒 Panier ({{ cartCount }})
+    </button>
+    <button class="mm-btn-primary" *ngIf="!utilisateur"
+            (click)="goToLogin(); menuOpen=false">
+      Connexion
+    </button>
+  </div>
+
+  <!-- HERO BANNER -->
+  <div class="hero-banner">
+    <div class="hb-eyebrow">
+      <div class="pulse-dot"></div>
+      🚀 Livraison express · Dakar & banlieue
+    </div>
+    <div class="hb-title">
+      Que voulez-vous <span class="hb-em">manger</span> aujourd'hui ?
+    </div>
+    <div class="hb-sub">
+      {{ restaurants.length }}+ restaurants · Payez Wave ou Orange Money · Livré en 30 min
+    </div>
+    <div class="hb-stats">
+      <div class="hb-stat">
+        <div class="hs-n green">{{ restaurants.length }}+</div>
+        <div class="hs-l">Restaurants</div>
+      </div>
+      <div class="hb-stat">
+        <div class="hs-n orange">{{ plats.length }}+</div>
+        <div class="hs-l">Plats disponibles</div>
+      </div>
+      <div class="hb-stat">
+        <div class="hs-n yellow">4.9 ⭐</div>
+        <div class="hs-l">Note moyenne</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENU -->
+  <div class="content">
+
+    <!-- CATÉGORIES -->
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Explorer</div>
+        <div class="section-title">Catégories <span>populaires</span></div>
+      </div>
+    </div>
+
+    <div class="cat-scroll">
+      <div class="cat-pill" *ngIf="chargementCategories">
+        <div class="spinner-sm"></div>
+      </div>
+      <div class="cat-pill"
+           *ngFor="let cat of categories"
+           [class.active]="categorieActive === cat.nom"
+           (click)="filtrerCategorie(cat.nom)">
+        <div class="cat-emoji">{{ cat.emoji }}</div>
+        <div class="cat-name">{{ cat.nom }}</div>
+      </div>
+    </div>
+
+    <!-- FILTRES -->
+    <div class="filter-bar">
+      <button class="filter-btn" [class.active]="filtreActif === 'tous'"
+              (click)="setFiltre('tous')">Tous</button>
+      <button class="filter-btn" [class.active]="filtreActif === 'note'"
+              (click)="setFiltre('note')">⭐ Mieux notés</button>
+      <button class="filter-btn" [class.active]="filtreActif === 'gratuit'"
+              (click)="setFiltre('gratuit')">🆓 Livraison gratuite</button>
+      <button class="filter-btn" [class.active]="filtreActif === 'rapide'"
+              (click)="setFiltre('rapide')">⚡ Moins de 20 min</button>
+      <button class="filter-btn" [class.active]="filtreActif === 'ouvert'"
+              (click)="setFiltre('ouvert')">🟢 Ouverts maintenant</button>
+      <div class="filter-sep"></div>
+      <select class="sort-select" [(ngModel)]="sortActif" (change)="setSort(sortActif)">
+        <option value="popularite">Trier : Popularité</option>
+        <option value="note">Note ↓</option>
+        <option value="temps">Temps ↑</option>
+      </select>
+    </div>
+
+    <!-- RESTAURANTS -->
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Près de vous</div>
+        <div class="section-title">Restaurants <span>du moment</span></div>
+      </div>
+      <span class="see-all">Voir tous ({{ restaurantsFiltres.length }}) →</span>
+    </div>
+
+    <!-- LOADING RESTAURANTS -->
+    <div class="loading-row" *ngIf="chargementRestaurants">
+      <div class="spinner"></div>
+      <span>Chargement des restaurants...</span>
+    </div>
+
+    <!-- EMPTY RESTAURANTS -->
+    <div class="empty-state" *ngIf="!chargementRestaurants && restaurantsFiltres.length === 0">
+      <div style="font-size:48px;margin-bottom:12px">🏪</div>
+      <div class="es-title">Aucun restaurant trouvé</div>
+      <div class="es-sub">Modifiez vos filtres ou recherchez autre chose</div>
+    </div>
+
+    <!-- GRILLE RESTAURANTS -->
+    <div class="resto-grid" *ngIf="!chargementRestaurants && restaurantsFiltres.length > 0">
+      <div class="resto-card" *ngFor="let r of restaurantsFiltres; let i = index"
+           (click)="goToPanier()">
+
+        <div class="resto-img" [ngClass]="'ri-' + ((i % 6) + 1)">
+          <img *ngIf="r.photo" [src]="getPhotoUrl(r.photo)" [alt]="r.nom" class="ri-photo">
+          <span *ngIf="!r.photo" class="ri-emoji">🏪</span>
+          <div class="resto-badge" [ngClass]="r.est_ouvert ? 'badge-open' : 'badge-closed'">
+            {{ r.est_ouvert ? '● Ouvert' : '○ Fermé' }}
+          </div>
+          <button class="resto-fav" (click)="toggleFav(r); $event.stopPropagation()">
+            {{ r.fav ? '❤️' : '🤍' }}
+          </button>
+        </div>
+
+        <div class="resto-body">
+          <div class="resto-name">{{ r.nom }}</div>
+          <div class="resto-tags">{{ r.description || 'Restaurant partenaire QuickBite SN' }}</div>
+          <div class="resto-meta">
+            <div class="resto-rating">
+              ⭐ {{ r.note_moyenne || '0.0' }}
+              <span class="rating-count">({{ r.nombre_avis || 0 }})</span>
+            </div>
+            <div class="resto-info">
+              <span>🕐 {{ r.temps_livraison || '30 min' }}</span>
+              <span>·</span>
+              <span [class.resto-free]="r.livraison_gratuite">
+                {{ r.livraison_gratuite ? 'Gratuite' : r.frais_livraison + ' F' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLATS POPULAIRES -->
+    <div class="section-header" style="margin-top:40px">
+      <div>
+        <div class="section-eyebrow">Les incontournables</div>
+        <div class="section-title">🔥 Plats <span>populaires</span></div>
+      </div>
+      <span class="see-all">Voir tout →</span>
+    </div>
+
+    <!-- LOADING PLATS -->
+    <div class="loading-row" *ngIf="chargementPlats">
+      <div class="spinner"></div>
+      <span>Chargement des plats...</span>
+    </div>
+
+    <!-- EMPTY PLATS -->
+    <div class="empty-state" *ngIf="!chargementPlats && platsFiltres.length === 0">
+      <div style="font-size:48px;margin-bottom:12px">🍽️</div>
+      <div class="es-title">Aucun plat disponible</div>
+      <div class="es-sub">L'admin doit ajouter des plats</div>
+    </div>
+
+    <!-- GRILLE PLATS -->
+    <div class="plats-grid" *ngIf="!chargementPlats && platsFiltres.length > 0">
+      <div class="plat-card" *ngFor="let p of platsFiltres; let i = index">
+
+        <div class="plat-img" [ngClass]="'ri-' + ((i % 6) + 1)">
+          <img *ngIf="p.photo" [src]="getPlatPhotoUrl(p.photo)" [alt]="p.nom" class="ri-photo">
+          <span *ngIf="!p.photo" class="pi-emoji">{{ p.emoji || '🍽️' }}</span>
+          <div class="plat-badge" *ngIf="p.est_populaire">🔥 Top</div>
+        </div>
+
+        <div class="plat-body">
+          <div class="plat-name">{{ p.nom }}</div>
+          <div class="plat-resto">{{ p.restaurant_nom || 'Restaurant' }}</div>
+          <div class="plat-footer">
+            <div class="plat-price">{{ p.prix | number }} F</div>
+            <button class="add-btn" (click)="ajouterAuPanier(p)">
+              {{ p.quantite > 0 ? '✓ ' + p.quantite : '+' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="ft-brand">
+        <div class="footer-logo">
+          <div class="logo-icon">🍔</div>
+          <div class="logo-text">Quick<span>Bite</span> SN</div>
+        </div>
+        <p class="ft-desc">La plateforme de livraison de repas #1 à Dakar, Sénégal.</p>
+        <div class="ft-social">
+          <span class="fs-icon">📘</span>
+          <span class="fs-icon">📸</span>
+          <span class="fs-icon">🐦</span>
+          <span class="fs-icon">▶️</span>
+        </div>
+      </div>
+      <div class="ft-links">
+        <div class="ftl-title">Navigation</div>
+        <a class="ftl-link" (click)="goToAccueil()">🏠 Accueil</a>
+        <a class="ftl-link">🍽️ Menu</a>
+        <a class="ftl-link" (click)="goToAPropos()">ℹ️ À propos</a>
+      </div>
+      <div class="ft-links">
+        <div class="ftl-title">Compte</div>
+        <a class="ftl-link" (click)="goToLogin()">🔐 Connexion</a>
+        <a class="ftl-link" (click)="goToRegister()">✨ Inscription</a>
+        <a class="ftl-link" (click)="goToPanier()">🛒 Mon panier</a>
+      </div>
+      <div class="ft-links">
+        <div class="ftl-title">Contact</div>
+        <div class="ftl-link">📞 +221 77 000 00 00</div>
+        <div class="ftl-link">📧 contact&#64;quickbite.sn</div>
+        <div class="ftl-link">📍 Dakar, Sénégal</div>
+        <div class="ftl-link">⏰ 7j/7 · 08h–23h</div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 QuickBite SN · Tous droits réservés · Fait avec ❤️ à Dakar</div>
+      <div>🎓 UNCHK · Master 1 · Promotion 8</div>
+    </div>
+  </footer>
+
+</div>

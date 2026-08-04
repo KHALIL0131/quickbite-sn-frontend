@@ -1,0 +1,195 @@
+<div class="livreur-wrap">
+
+  <!-- OVERLAY -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🛵</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">🛵 Espace Livreur</div>
+    </div>
+    <div class="sb-profil">
+      <div class="sp-avatar">{{ getInitiales() }}</div>
+      <div class="sp-info">
+        <div class="sp-name">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+        <div class="sp-statut online">● En ligne</div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Navigation</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" (click)="naviguer('livraisons')"><span class="nav-icon">🛵</span><span class="nav-label">Mes livraisons</span></a>
+      <a class="nav-item" (click)="naviguer('historique')"><span class="nav-icon">📅</span><span class="nav-label">Historique</span></a>
+      <a class="nav-item" (click)="naviguer('gains')"><span class="nav-icon">💰</span><span class="nav-label">Mes gains</span></a>
+      <a class="nav-item active"><span class="nav-icon">🗺️</span><span class="nav-label">Carte GPS</span></a>
+      <a class="nav-item" (click)="naviguer('messagerie')">
+  <span class="nav-icon">💬</span>
+  <span class="nav-label">Messagerie</span>
+</a>
+      <div class="nav-section">Mon véhicule</div>
+      <a class="nav-item" (click)="naviguer('moto')"><span class="nav-icon">🏍️</span><span class="nav-label">Mon moto</span></a>
+      <a class="nav-item" (click)="naviguer('carburant')"><span class="nav-icon">⛽</span><span class="nav-label">Carburant</span></a>
+      <a class="nav-item" (click)="naviguer('entretien')"><span class="nav-icon">🔧</span><span class="nav-label">Entretien</span></a>
+      <div class="nav-section">Compte</div>
+      <a class="nav-item" (click)="naviguer('profil')"><span class="nav-icon">👤</span><span class="nav-label">Mon profil</span></a>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span><span class="nav-label">Paramètres</span></a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span><span class="nav-label">Déconnexion</span></a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo"><div class="logo-icon-sm">🗺️</div><span>Carte GPS</span></div>
+      <div class="nav-avatar">{{ getInitiales() }}</div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Carte GPS 🗺️</div>
+        <div class="ph-sub">Suivi de votre position en temps réel · OpenStreetMap</div>
+      </div>
+      <div class="ph-actions">
+        <div class="gps-status" [class.actif]="suiviActif">
+          <div class="gs-dot"></div>
+          {{ suiviActif ? 'GPS Actif' : 'GPS Inactif' }}
+        </div>
+        <button class="btn-centrer" (click)="centrerSurMoi()" *ngIf="positionActuelle">
+          🎯 Centrer
+        </button>
+        <button class="btn-stop" (click)="arreterSuivi()" *ngIf="suiviActif">
+          ⏹ Arrêter
+        </button>
+        <button class="btn-start" (click)="demarrerSuivi()" *ngIf="!suiviActif">
+          ▶ Démarrer GPS
+        </button>
+      </div>
+    </div>
+
+    <!-- ERREUR GPS -->
+    <div class="gps-erreur" *ngIf="erreurGPS">
+      <div class="ge-icon">⚠️</div>
+      <div>
+        <div class="ge-titre">Problème GPS</div>
+        <div class="ge-msg">{{ erreurGPS }}</div>
+      </div>
+      <button class="ge-retry" (click)="demarrerSuivi()">🔄 Réessayer</button>
+    </div>
+
+    <!-- INFO POSITION -->
+    <div class="position-cards" *ngIf="positionActuelle">
+      <div class="pos-card">
+        <div class="pc-icon">📍</div>
+        <div class="pc-label">Latitude</div>
+        <div class="pc-val">{{ positionActuelle.lat?.toFixed(6) }}</div>
+      </div>
+      <div class="pos-card">
+        <div class="pc-icon">📍</div>
+        <div class="pc-label">Longitude</div>
+        <div class="pc-val">{{ positionActuelle.lng?.toFixed(6) }}</div>
+      </div>
+      <div class="pos-card">
+        <div class="pc-icon">⚡</div>
+        <div class="pc-label">Vitesse</div>
+        <div class="pc-val">{{ formaterVitesse(positionActuelle.vitesse) }}</div>
+      </div>
+      <div class="pos-card">
+        <div class="pc-icon">🎯</div>
+        <div class="pc-label">Précision</div>
+        <div class="pc-val">±{{ positionActuelle.precision?.toFixed(0) }}m</div>
+      </div>
+      <div class="pos-card">
+        <div class="pc-icon">🕐</div>
+        <div class="pc-label">Mise à jour</div>
+        <div class="pc-val">{{ derniereMaj }}</div>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement de la carte...</span>
+    </div>
+
+    <!-- CARTE LEAFLET -->
+    <div class="map-container" *ngIf="!loading">
+      <div id="map"></div>
+
+      <!-- LÉGENDE -->
+      <div class="map-legend">
+        <div class="ml-item"><span>🛵</span> Votre position</div>
+        <div class="ml-item" *ngIf="commandeEnCours"><span>🏪</span> Restaurant</div>
+        <div class="ml-item" *ngIf="commandeEnCours"><span>📍</span> Client</div>
+      </div>
+
+      <!-- WAITING GPS -->
+      <div class="map-waiting" *ngIf="!positionActuelle && !erreurGPS">
+        <div class="mw-spinner"></div>
+        <div class="mw-text">Recherche du signal GPS...</div>
+        <div class="mw-sub">Autoriser la localisation dans votre navigateur</div>
+      </div>
+    </div>
+
+    <!-- COMMANDE EN COURS -->
+    <div class="commande-card" *ngIf="commandeEnCours">
+      <div class="cc-header">
+        <div class="cc-title">🛵 Livraison en cours</div>
+        <span class="cc-badge">En route</span>
+      </div>
+      <div class="cc-body">
+        <div class="cc-row">
+          <span class="cc-lbl">Commande</span>
+          <span class="cc-val">#{{ commandeEnCours.numero }}</span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-lbl">Restaurant</span>
+          <span class="cc-val">🏪 {{ commandeEnCours.restaurant_nom }}</span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-lbl">Client</span>
+          <span class="cc-val">👤 {{ commandeEnCours.client_prenom }} {{ commandeEnCours.client_nom }}</span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-lbl">Adresse</span>
+          <span class="cc-val">📍 {{ commandeEnCours.adresse_livraison }}</span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-lbl">Montant</span>
+          <span class="cc-val orange">{{ commandeEnCours.montant_total | number }} F</span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-lbl">Votre gain</span>
+          <span class="cc-val green">+{{ commandeEnCours.frais_livraison | number:'1.0-0' }} F</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFO GPS -->
+    <div class="gps-info">
+      <div class="gi-icon">💡</div>
+      <div>
+        <div class="gi-titre">Comment fonctionne le suivi GPS ?</div>
+        <div class="gi-text">
+          Votre position est mise à jour toutes les <strong>10 secondes</strong>.
+          L'administrateur peut voir votre position en temps réel depuis le dashboard admin.
+          Le GPS utilise la géolocalisation de votre navigateur — <strong>100% gratuit</strong>,
+          basé sur <strong>OpenStreetMap</strong>.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

@@ -1,0 +1,206 @@
+<div class="messagerie-wrap" (click)="fermerContextMenu()">
+
+  <!-- SIDEBAR LIVREUR -->
+  <div class="livreur-sidebar">
+    <div class="ls-header">
+      <div class="ls-logo">
+        <div class="logo-icon">🛵</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="ls-role">🛵 Espace Livreur</div>
+    </div>
+    <div class="ls-profil">
+      <div class="ls-avatar">{{ getInitiales() }}</div>
+      <div class="ls-info">
+        <div class="ls-name">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+        <div class="ls-statut">● En ligne</div>
+      </div>
+    </div>
+    <div class="ls-nav">
+      <a class="ls-link" (click)="goDashboard()">📊 Dashboard</a>
+      <a class="ls-link active">💬 Messagerie
+        <span class="ls-badge" *ngIf="totalNonLus > 0">{{ totalNonLus }}</span>
+      </a>
+      <a class="ls-link" (click)="router.navigate(['/mes-livraisons'])">🛵 Mes livraisons</a>
+      <a class="ls-link" (click)="router.navigate(['/gains-livreur'])">💰 Mes gains</a>
+      <a class="ls-link" (click)="router.navigate(['/carte-livreur'])">🗺️ Carte GPS</a>
+      <a class="ls-link" (click)="router.navigate(['/profil-livreur'])">👤 Mon profil</a>
+    </div>
+  </div>
+
+  <!-- CHAT ZONE -->
+  <div class="chat-zone">
+
+    <!-- CONVERSATIONS -->
+    <div class="conv-panel">
+      <div class="cp-header">
+        <div class="cp-title">💬 Mes clients</div>
+      </div>
+      <div class="cp-search">
+        <input type="text" [(ngModel)]="searchQuery" placeholder="🔍 Rechercher...">
+      </div>
+      <div class="conv-list">
+
+        <div class="conv-loading" *ngIf="loading">
+          <div class="mini-spinner"></div>
+          <span>Chargement...</span>
+        </div>
+
+        <div class="conv-empty" *ngIf="!loading && conversations.length === 0">
+          <div style="font-size:40px;margin-bottom:10px">💬</div>
+          <div style="font-weight:700;color:#FFFFFF;margin-bottom:6px">Aucun client</div>
+          <div style="font-size:12px;color:#6B8F77;text-align:center">
+            Les conversations apparaissent quand vous acceptez une livraison
+          </div>
+        </div>
+
+        <div class="section-label" *ngIf="conversations.length > 0">Clients en attente</div>
+
+        <div class="conv-item"
+             *ngFor="let c of conversationsFiltrees"
+             [class.active]="conversationActive?.commande_id === c.commande_id"
+             (click)="selectionnerConversation(c)">
+          <div class="ci-avatar">
+            {{ getInitiales({ nom: c.nom, prenom: c.prenom }) }}
+            <div class="ci-online"></div>
+          </div>
+          <div class="ci-info">
+            <div class="ci-name">{{ c.prenom }} {{ c.nom }}</div>
+            <div class="ci-role">👤 Client · #{{ c.numero }}</div>
+            <div class="ci-last">{{ c.dernier_message || 'Démarrer la conversation' }}</div>
+          </div>
+          <div class="ci-right">
+            <div class="ci-time">{{ formaterHeure(c.derniere_activite) }}</div>
+            <div class="ci-badge" *ngIf="c.non_lus > 0">{{ c.non_lus }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="messages-panel" *ngIf="conversationActive">
+
+      <div class="mp-header">
+        <div class="mp-avatar">
+          {{ getInitiales({ nom: conversationActive.nom, prenom: conversationActive.prenom }) }}
+        </div>
+        <div>
+          <div class="mp-name">{{ conversationActive.prenom }} {{ conversationActive.nom }}</div>
+          <div class="mp-status">
+            🟢 Client · Commande #{{ conversationActive.numero }}
+          </div>
+        </div>
+        <div class="mp-actions">
+          <div class="mpa-btn">📞</div>
+          <div class="mpa-btn">📦</div>
+        </div>
+      </div>
+
+      <div class="messages-list">
+
+        <div class="loading-msgs" *ngIf="loadingMessages">
+          <div class="mini-spinner"></div>
+          <span>Chargement...</span>
+        </div>
+
+        <div class="empty-msgs" *ngIf="!loadingMessages && messages.length === 0">
+          <div style="font-size:48px;margin-bottom:8px">💬</div>
+          <div>Envoyez un premier message</div>
+        </div>
+
+        <div class="date-sep" *ngIf="messages.length > 0">Aujourd'hui</div>
+
+        <div *ngFor="let m of messages">
+          <div class="msg-row"
+               [class.sent]="estMonMessage(m)"
+               [class.received]="!estMonMessage(m)">
+
+            <div class="msg-avatar-small" *ngIf="!estMonMessage(m)">
+              {{ getInitiales({ nom: conversationActive.nom, prenom: conversationActive.prenom }) }}
+            </div>
+
+            <div class="msg-content">
+              <div class="msg-sender-name" *ngIf="!estMonMessage(m)">
+                {{ conversationActive.prenom }}
+              </div>
+              <div class="msg-bubble"
+                   (contextmenu)="ouvrirContextMenu($event, m)"
+                   [class.my-bubble]="estMonMessage(m)"
+                   [class.their-bubble]="!estMonMessage(m)"
+                   [class.deleted]="m.est_supprime">
+                <span *ngIf="m.est_supprime">🚫 Message supprimé</span>
+                <span *ngIf="!m.est_supprime">{{ m.texte }}</span>
+                <span *ngIf="m.est_modifie && !m.est_supprime" class="edited"> ✏️</span>
+              </div>
+              <div class="msg-info">
+                <span class="msg-time">{{ formaterHeure(m.created_at) }}</span>
+                <span class="msg-status" *ngIf="estMonMessage(m)">
+                  {{ m.est_lu ? '✓✓' : '✓' }}
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="typing-row" *ngIf="interlocuteurEcrit">
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="typing-text">{{ conversationActive.prenom }} écrit...</div>
+        </div>
+
+        <div #messagesEnd></div>
+      </div>
+
+      <!-- EDITION BANNER -->
+      <div class="edition-banner" *ngIf="modeEdition">
+        <span>✏️ Modifier :</span>
+        <span class="eb-preview">{{ messageSelectionne?.texte }}</span>
+        <button class="eb-close" (click)="annulerEdition()">✕</button>
+      </div>
+
+      <!-- INPUT -->
+      <div class="input-bar">
+        <div class="input-row">
+          <textarea class="msg-input" *ngIf="!modeEdition"
+                    [(ngModel)]="nouveauMessage"
+                    placeholder="Répondre au client..."
+                    rows="1"
+                    (input)="onInput()"
+                    (keydown)="onKeyEnter($event)"></textarea>
+          <textarea class="msg-input editing" *ngIf="modeEdition"
+                    [(ngModel)]="texteEdition"
+                    placeholder="Modifier le message..."
+                    rows="1"
+                    (keydown)="onKeyEnter($event)"></textarea>
+          <button class="send-btn"
+                  (click)="envoyerMessage()"
+                  [disabled]="modeEdition ? !texteEdition.trim() : !nouveauMessage.trim()">
+            {{ modeEdition ? '✓' : '➤' }}
+          </button>
+        </div>
+        <div class="input-hint">Clic droit pour modifier/supprimer · Entrée pour envoyer</div>
+      </div>
+    </div>
+
+    <!-- NO CONV -->
+    <div class="no-conv" *ngIf="!conversationActive && !loading">
+      <div style="font-size:64px;margin-bottom:16px">💬</div>
+      <div class="nc-title">Messagerie Livreur</div>
+      <div class="nc-sub">Sélectionnez un client pour commencer à discuter</div>
+    </div>
+
+  </div>
+
+  <!-- CONTEXT MENU -->
+  <div class="context-menu" *ngIf="showContextMenu"
+       [style.left]="contextMenuX + 'px'"
+       [style.top]="contextMenuY + 'px'"
+       (click)="$event.stopPropagation()">
+    <div class="cm-item" (click)="commencerEdition()">✏️ Modifier</div>
+    <div class="cm-divider"></div>
+    <div class="cm-item danger" (click)="supprimerMessage()">🗑 Supprimer</div>
+  </div>
+
+</div>

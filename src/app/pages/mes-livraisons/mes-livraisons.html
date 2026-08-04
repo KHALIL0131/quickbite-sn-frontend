@@ -1,0 +1,149 @@
+<div class="livreur-wrap">
+
+  <!-- OVERLAY -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🛵</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">🛵 Espace Livreur</div>
+    </div>
+    <div class="sb-profil">
+      <div class="sp-avatar">{{ getInitiales() }}</div>
+      <div class="sp-info">
+        <div class="sp-name">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+        <div class="sp-statut online">● En ligne</div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Navigation</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item active"><span class="nav-icon">🛵</span><span class="nav-label">Mes livraisons</span></a>
+      <a class="nav-item" (click)="naviguer('historique')"><span class="nav-icon">📅</span><span class="nav-label">Historique</span></a>
+      <a class="nav-item" (click)="naviguer('gains')"><span class="nav-icon">💰</span><span class="nav-label">Mes gains</span></a>
+      <a class="nav-item" (click)="naviguer('carte')"><span class="nav-icon">🗺️</span><span class="nav-label">Carte GPS</span></a>
+      <a class="nav-item" (click)="naviguer('messagerie')"><span class="nav-icon">💬</span><span class="nav-label">Messagerie</span></a>
+      <div class="nav-section">Mon véhicule</div>
+      <a class="nav-item" (click)="naviguer('moto')"><span class="nav-icon">🏍️</span><span class="nav-label">Mon moto</span></a>
+      <a class="nav-item" (click)="naviguer('carburant')"><span class="nav-icon">⛽</span><span class="nav-label">Carburant</span></a>
+      <a class="nav-item" (click)="naviguer('entretien')"><span class="nav-icon">🔧</span><span class="nav-label">Entretien</span></a>
+      <div class="nav-section">Compte</div>
+      <a class="nav-item" (click)="naviguer('profil')"><span class="nav-icon">👤</span><span class="nav-label">Mon profil</span></a>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span><span class="nav-label">Paramètres</span></a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span><span class="nav-label">Déconnexion</span></a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo"><div class="logo-icon-sm">🛵</div><span>Mes livraisons</span></div>
+      <div class="nav-avatar">{{ getInitiales() }}</div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Mes livraisons 🛵</div>
+        <div class="ph-sub">Gérez vos livraisons en cours et passées</div>
+      </div>
+      <button class="btn-refresh" (click)="chargerCommandes()">🔄 Actualiser</button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="sc-val white">{{ stats.toutes }}</div>
+        <div class="sc-lbl">Total</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-val orange">{{ stats.encours }}</div>
+        <div class="sc-lbl">En cours</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-val green">{{ stats.livrees }}</div>
+        <div class="sc-lbl">Livrées ✅</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-val muted">{{ stats.annulees }}</div>
+        <div class="sc-lbl">Annulées</div>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement...</span>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- FILTRES -->
+      <div class="toolbar">
+        <div class="search-box">
+          <input type="text" placeholder="🔍 Rechercher..."
+                 [(ngModel)]="searchQuery" (input)="filtrer()">
+        </div>
+        <div class="filter-tabs">
+          <button class="ftab" [class.active]="filtreActif === 'toutes'"
+                  (click)="setFiltre('toutes')">Toutes ({{ stats.toutes }})</button>
+          <button class="ftab" [class.active]="filtreActif === 'encours'"
+                  (click)="setFiltre('encours')">🛵 En cours ({{ stats.encours }})</button>
+          <button class="ftab" [class.active]="filtreActif === 'livrees'"
+                  (click)="setFiltre('livrees')">✅ Livrées ({{ stats.livrees }})</button>
+          <button class="ftab" [class.active]="filtreActif === 'annulees'"
+                  (click)="setFiltre('annulees')">✗ Annulées ({{ stats.annulees }})</button>
+        </div>
+      </div>
+
+      <!-- EMPTY -->
+      <div class="empty-state" *ngIf="commandesFiltrees.length === 0">
+        <div style="font-size:64px;margin-bottom:16px">🛵</div>
+        <div class="es-title">Aucune livraison</div>
+        <div class="es-sub">Aucune livraison dans cette catégorie</div>
+      </div>
+
+      <!-- LISTE -->
+      <div class="livraison-card" *ngFor="let c of commandesFiltrees">
+        <div class="lc-header" (click)="voirCommande(c)">
+          <div class="lc-emoji">{{ c.details?.[0]?.emoji || '🍽️' }}</div>
+          <div class="lc-info">
+            <div class="lc-id">#{{ c.numero }}</div>
+            <div class="lc-client">{{ c.client_prenom }} {{ c.client_nom }}</div>
+            <div class="lc-addr">📍 {{ c.adresse_livraison }}</div>
+            <div class="lc-resto">🏪 {{ c.restaurant_nom }}</div>
+          </div>
+          <div class="lc-meta">
+            <div class="lc-amount">{{ formaterMontant(c.montant_total) }}</div>
+            <div class="lc-gain">+{{ formaterMontant(getGain(c)) }}</div>
+            <span class="status-pill" [ngClass]="getStatutClass(c.statut)">
+              {{ getStatutLabel(c.statut) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- ACTIONS PAR STATUT -->
+        <div class="lc-actions">
+          <button class="la-btn view" (click)="voirCommande(c)">👁 Voir détail</button>
+          <button class="la-btn accept" *ngIf="c.statut === 'nouvelle'"
+                  (click)="accepterCommande(c)">✅ Accepter</button>
+          <button class="la-btn livrer" *ngIf="c.statut === 'en_livraison'"
+                  (click)="livrerCommande(c)">📦 Marquer livré</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

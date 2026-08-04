@@ -1,0 +1,249 @@
+<div class="recherche-wrap">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+    <div class="nav-right">
+      <button class="nav-cart" (click)="goToPanier()">
+        🛒 Panier
+        <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+      </button>
+      <div class="nav-avatar" *ngIf="utilisateur" (click)="goToProfil()">
+        {{ getInitiales() }}
+      </div>
+      <button class="nav-btn" (click)="goToMenu()">🍽️ Menu</button>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+
+    <!-- SEARCH HERO -->
+    <div class="search-hero">
+      <div class="sh-label" *ngIf="rechercheEffectuee">
+        Résultats de recherche pour
+      </div>
+      <div class="sh-label" *ngIf="!rechercheEffectuee">
+        Que recherchez-vous ?
+      </div>
+
+      <div class="sh-query" *ngIf="searchQuery && rechercheEffectuee">
+        "<span>{{ searchQuery }}</span>"
+      </div>
+
+      <div class="sh-count" *ngIf="rechercheEffectuee">
+        {{ totalResultats }} résultat{{ totalResultats > 1 ? 's' : '' }} trouvé{{ totalResultats > 1 ? 's' : '' }}
+        · Dakar
+      </div>
+
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" [(ngModel)]="searchQuery"
+               placeholder="Restaurant, plat, catégorie..."
+               (keydown)="onSearchKey($event)">
+        <button class="search-btn" (click)="rechercher()" [disabled]="chargement">
+          {{ chargement ? '⏳' : 'Rechercher' }}
+        </button>
+      </div>
+
+      <!-- SUGGESTIONS RAPIDES -->
+      <div class="suggestions" *ngIf="!rechercheEffectuee">
+        <span class="sugg-label">Populaire :</span>
+        <button class="sugg-btn" (click)="searchQuery='burger'; rechercher()">🍔 Burger</button>
+        <button class="sugg-btn" (click)="searchQuery='thiéboudiène'; rechercher()">🍛 Thiéboudiène</button>
+        <button class="sugg-btn" (click)="searchQuery='pizza'; rechercher()">🍕 Pizza</button>
+        <button class="sugg-btn" (click)="searchQuery='tacos'; rechercher()">🌮 Tacos</button>
+        <button class="sugg-btn" (click)="searchQuery='poulet'; rechercher()">🍗 Poulet</button>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="chargement">
+      <div class="spinner"></div>
+      <span>Recherche en cours...</span>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="empty-state" *ngIf="rechercheEffectuee && totalResultats === 0 && !chargement">
+      <div style="font-size:64px;margin-bottom:16px">🔍</div>
+      <div class="es-title">Aucun résultat pour "{{ searchQuery }}"</div>
+      <div class="es-sub">Essayez un autre mot clé ou explorez notre menu</div>
+      <button class="btn-menu" (click)="goToMenu()">🍽️ Voir tout le menu</button>
+    </div>
+
+    <!-- RÉSULTATS -->
+    <div class="filters-wrap" *ngIf="rechercheEffectuee && totalResultats > 0 && !chargement">
+
+      <!-- FILTRES GAUCHE -->
+      <div class="filter-left">
+
+        <div class="filter-card">
+          <div class="fc-title">Budget</div>
+          <div class="range-row">
+            <input class="range-input" type="number" [(ngModel)]="prixMin"
+                   placeholder="Min" (change)="appliquerFiltres()">
+            <span class="range-sep">–</span>
+            <input class="range-input" type="number" [(ngModel)]="prixMax"
+                   placeholder="Max" (change)="appliquerFiltres()">
+          </div>
+          <input type="range" min="0" max="20000" [(ngModel)]="prixRange"
+                 (input)="onPrixRangeChange()">
+          <div class="range-label">{{ formaterMontant(prixMin) }} – {{ formaterMontant(prixRange) }}</div>
+        </div>
+
+        <div class="filter-card">
+          <div class="fc-title">Note minimale</div>
+          <div class="check-list">
+            <label class="check-item">
+              <input type="radio" name="rating" [value]="5" [(ngModel)]="noteMin"
+                     (change)="appliquerFiltres()">
+              ⭐⭐⭐⭐⭐ 5 étoiles
+            </label>
+            <label class="check-item">
+              <input type="radio" name="rating" [value]="4" [(ngModel)]="noteMin"
+                     (change)="appliquerFiltres()">
+              ⭐⭐⭐⭐ 4+ étoiles
+            </label>
+            <label class="check-item">
+              <input type="radio" name="rating" [value]="3" [(ngModel)]="noteMin"
+                     (change)="appliquerFiltres()">
+              ⭐⭐⭐ 3+ étoiles
+            </label>
+            <label class="check-item">
+              <input type="radio" name="rating" [value]="0" [(ngModel)]="noteMin"
+                     (change)="appliquerFiltres()">
+              Toutes les notes
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-card">
+          <div class="fc-title">Délai livraison</div>
+          <div class="check-list">
+            <label class="check-item">
+              <input type="radio" name="delai" [value]="15" [(ngModel)]="delai_max"
+                     (change)="appliquerFiltres()">
+              ⚡ Moins de 15 min
+            </label>
+            <label class="check-item">
+              <input type="radio" name="delai" [value]="30" [(ngModel)]="delai_max"
+                     (change)="appliquerFiltres()">
+              🕐 Moins de 30 min
+            </label>
+            <label class="check-item">
+              <input type="radio" name="delai" [value]="60" [(ngModel)]="delai_max"
+                     (change)="appliquerFiltres()">
+              🕐 Moins d'1 heure
+            </label>
+            <label class="check-item">
+              <input type="radio" name="delai" [value]="0" [(ngModel)]="delai_max"
+                     (change)="appliquerFiltres()">
+              Tous
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-card">
+          <div class="fc-title">Options</div>
+          <div class="check-list">
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="livraison_gratuite"
+                     (change)="appliquerFiltres()">
+              🆓 Livraison gratuite
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RÉSULTATS DROITE -->
+      <div class="results-wrap">
+
+        <div class="results-header">
+          <div class="rh-tabs">
+            <div class="rh-tab" [class.active]="ongletActif === 'restaurants'"
+                 (click)="ongletActif = 'restaurants'">
+              🏪 Restaurants ({{ restaurantsFiltres.length }})
+            </div>
+            <div class="rh-tab" [class.active]="ongletActif === 'plats'"
+                 (click)="ongletActif = 'plats'">
+              🍽️ Plats ({{ platsFiltres.length }})
+            </div>
+          </div>
+          <select class="rh-sort" [(ngModel)]="sortActif" (change)="appliquerFiltres()">
+            <option value="pertinence">Pertinence</option>
+            <option value="note">Note ↓</option>
+            <option value="prix">Prix ↑</option>
+            <option value="delai">Délai ↑</option>
+          </select>
+        </div>
+
+        <!-- RESTAURANTS -->
+        <div *ngIf="ongletActif === 'restaurants'">
+          <div class="empty-results" *ngIf="restaurantsFiltres.length === 0">
+            Aucun restaurant trouvé avec ces filtres
+          </div>
+          <div class="resto-grid" *ngIf="restaurantsFiltres.length > 0">
+            <div class="resto-card" *ngFor="let r of restaurantsFiltres; let i = index"
+                 (click)="goToMenu()">
+              <div class="rc-img" [ngClass]="getRestoClass(i)">
+                <img *ngIf="r.photo" [src]="getRestoPhotoUrl(r.photo)" [alt]="r.nom" class="rc-photo">
+                <span *ngIf="!r.photo">🏪</span>
+              </div>
+              <div class="rc-body">
+                <div class="rc-name">{{ r.nom }}</div>
+                <div class="rc-tags">{{ r.description || r.ville || 'Dakar' }}</div>
+                <div class="rc-meta">
+                  <span class="rc-rating">⭐ {{ r.note_moyenne || '0.0' }}</span>
+                  <div class="rc-info">
+                    <span>🕐 {{ r.temps_livraison || '30 min' }}</span>
+                  </div>
+                  <span class="rc-badge rb-free" *ngIf="r.livraison_gratuite">
+                    Livraison gratuite
+                  </span>
+                  <span class="rc-badge rb-open" *ngIf="r.est_ouvert">● Ouvert</span>
+                </div>
+                <div class="rc-adresse" *ngIf="r.adresse">
+                  📍 {{ r.adresse }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLATS -->
+        <div *ngIf="ongletActif === 'plats'">
+          <div class="plats-title" *ngIf="platsFiltres.length > 0">
+            🍽️ Plats "{{ searchQuery }}" ({{ platsFiltres.length }})
+          </div>
+          <div class="empty-results" *ngIf="platsFiltres.length === 0">
+            Aucun plat trouvé avec ces filtres
+          </div>
+          <div class="plats-grid" *ngIf="platsFiltres.length > 0">
+            <div class="plat-card" *ngFor="let p of platsFiltres; let i = index">
+              <div class="plat-img" [ngClass]="getRestoClass(i)">
+                <img *ngIf="p.photo" [src]="getPlatPhotoUrl(p.photo)" [alt]="p.nom" class="plat-photo">
+                <span *ngIf="!p.photo">{{ p.emoji || '🍽️' }}</span>
+              </div>
+              <div class="plat-body">
+                <div class="plat-name">{{ p.nom }}</div>
+                <div class="plat-resto">🏪 {{ p.restaurant_nom || 'Restaurant' }}</div>
+                <div class="plat-footer">
+                  <div class="plat-price">{{ formaterMontant(p.prix) }}</div>
+                  <button class="add-btn" (click)="ajouterAuPanier(p)">
+                    {{ p.quantite > 0 ? '✓' + p.quantite : '+' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>

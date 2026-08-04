@@ -1,0 +1,531 @@
+<div class="apropos-wrap">
+
+  <!-- NAV COMPLÈTE -->
+  <nav class="nav">
+    <div class="nav-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" (click)="goToAccueil()">Accueil</a>
+      <a class="nav-link" (click)="goToMenu()">Restaurants</a>
+      <a class="nav-link" (click)="goToMenu()">Menu</a>
+      <a class="nav-link" (click)="goToMenu()">Offres</a>
+      <a class="nav-link active">À propos</a>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-btn" (click)="goToLogin()">Connexion</button>
+      <button class="nav-btn-primary" (click)="goToRegister()">S'inscrire</button>
+    </div>
+    <button class="burger" (click)="menuOpen = !menuOpen">
+      {{ menuOpen ? '✕' : '☰' }}
+    </button>
+  </nav>
+
+  <!-- MENU MOBILE -->
+  <div class="mobile-menu" [class.open]="menuOpen">
+    <a class="mm-link" (click)="goToAccueil(); menuOpen=false">🏠 Accueil</a>
+    <a class="mm-link" (click)="goToMenu(); menuOpen=false">🏪 Restaurants</a>
+    <a class="mm-link" (click)="goToMenu(); menuOpen=false">🍽️ Menu</a>
+    <a class="mm-link" (click)="goToMenu(); menuOpen=false">🎁 Offres</a>
+    <a class="mm-link active">ℹ️ À propos</a>
+    <div class="mm-divider"></div>
+    <button class="mm-btn" (click)="goToLogin(); menuOpen=false">Connexion</button>
+    <button class="mm-btn-primary" (click)="goToRegister(); menuOpen=false">S'inscrire</button>
+  </div>
+
+  <!-- HERO ANIMÉ -->
+  <section class="hero">
+    <div class="hero-particles">
+      <div class="particle" *ngFor="let p of particles" [style.left]="p.left" [style.top]="p.top"
+           [style.animation-delay]="p.delay" [style.width]="p.size" [style.height]="p.size"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge animate-fade">
+        <span class="badge-dot"></span>
+        Plateforme N°1 à Dakar · Depuis 2026
+      </div>
+      <h1 class="hero-title animate-slide">
+        QuickBite <span class="gradient-text">SN</span><br>
+        <span class="hero-sub-title">La révolution de la</span><br>
+        <span class="gradient-text">livraison à domicile</span>
+      </h1>
+      <p class="hero-desc animate-fade-2">
+        Nous connectons les meilleurs restaurants de Dakar avec des milliers de clients
+        affamés. Rapide, fiable, délicieux — c'est la promesse QuickBite SN.
+      </p>
+      <div class="hero-cta">
+        <button class="btn-hero-primary" (click)="goToMenu()">
+          🍽️ Commander maintenant
+        </button>
+        <button class="btn-hero-secondary" (click)="goToRegister()">
+          ✨ Rejoindre QuickBite
+        </button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hv-phone">
+        <div class="hv-screen">
+          <div class="hvs-header">
+            <div class="hvs-logo">🍔</div>
+            <div class="hvs-title">QuickBite SN</div>
+          </div>
+          <div class="hvs-order">
+            <div class="hvs-item">🍔 Double Burger · 4 600 F</div>
+            <div class="hvs-item">🍛 Thiéboudiène · 2 500 F</div>
+            <div class="hvs-item">🥤 Jus Bissap · 800 F</div>
+          </div>
+          <div class="hvs-total">Total : 7 900 F</div>
+          <div class="hvs-btn">Commander →</div>
+          <div class="hvs-status">
+            <div class="hvs-dot"></div>
+            Livreur en route · 12 min
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS ANIMÉES -->
+  <section class="stats-section">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="si-val">120<span>+</span></div>
+        <div class="si-lbl">Restaurants partenaires</div>
+        <div class="si-icon">🏪</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="si-val">30<span>min</span></div>
+        <div class="si-lbl">Délai moyen livraison</div>
+        <div class="si-icon">🛵</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="si-val">10K<span>+</span></div>
+        <div class="si-lbl">Clients satisfaits</div>
+        <div class="si-icon">👥</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="si-val">4.8<span>⭐</span></div>
+        <div class="si-lbl">Note moyenne</div>
+        <div class="si-icon">🌟</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="si-val">7<span>j/7</span></div>
+        <div class="si-lbl">Disponibilité</div>
+        <div class="si-icon">⏰</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOTRE HISTOIRE -->
+  <section class="section">
+    <div class="section-badge">Notre histoire</div>
+    <h2 class="section-title">Comment tout a <span>commencé</span></h2>
+    <div class="histoire-grid">
+      <div class="histoire-text">
+        <p>
+          QuickBite SN est né d'une idée simple : pourquoi attendre des heures
+          pour se faire livrer un repas à Dakar ? En 2026, quatre étudiants de
+          l'Université Numérique Cheikh Hamidou Kane (UNCHK) ont décidé de
+          changer les règles du jeu.
+        </p>
+        <p>
+          Notre équipe a développé une plateforme complète — de la commande
+          à la livraison — en intégrant les modes de paiement locaux comme
+          Wave et Orange Money. Nous voulions une solution 100% sénégalaise,
+          adaptée aux réalités de Dakar.
+        </p>
+        <p>
+          Aujourd'hui, QuickBite SN connecte des dizaines de restaurants
+          partenaires avec des milliers de clients dans tout Dakar. Et ce n'est
+          que le début !
+        </p>
+        <div class="histoire-tags">
+          <span class="htag">🎓 UNCHK Master 1</span>
+          <span class="htag">💻 Angular 21</span>
+          <span class="htag">⚡ Node.js</span>
+          <span class="htag">🗄️ MySQL</span>
+          <span class="htag">📱 Wave & OM</span>
+        </div>
+      </div>
+      <div class="histoire-timeline">
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <div class="tl-date">Janvier 2026</div>
+            <div class="tl-title">Début du projet</div>
+            <div class="tl-desc">L'équipe se forme à l'UNCHK et démarre le développement</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <div class="tl-date">Avril 2026</div>
+            <div class="tl-title">Premier restaurant</div>
+            <div class="tl-desc">Le premier restaurant partenaire rejoint la plateforme</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <div class="tl-date">Juillet 2026</div>
+            <div class="tl-title">Lancement officiel</div>
+            <div class="tl-desc">QuickBite SN est lancé officiellement à Dakar</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <div class="tl-date">Août 2026</div>
+            <div class="tl-title">Déploiement national</div>
+            <div class="tl-desc">Extension à d'autres villes du Sénégal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MISSION & VALEURS -->
+  <section class="section section-dark">
+    <div class="section-badge">Mission & Valeurs</div>
+    <h2 class="section-title">Ce qui nous <span>anime</span></h2>
+    <div class="valeurs-grid">
+      <div class="valeur-card">
+        <div class="vc-icon">🎯</div>
+        <div class="vc-title">Notre mission</div>
+        <div class="vc-text">
+          Rendre la livraison de repas accessible, rapide et fiable pour
+          tous les Dakarois. Chaque commande doit être une expérience
+          exceptionnelle.
+        </div>
+      </div>
+      <div class="valeur-card">
+        <div class="vc-icon">⚡</div>
+        <div class="vc-title">Rapidité</div>
+        <div class="vc-text">
+          30 minutes maximum pour chaque livraison. Nos livreurs sont
+          formés pour être rapides, efficaces et toujours à l'heure.
+        </div>
+      </div>
+      <div class="valeur-card">
+        <div class="vc-icon">🔒</div>
+        <div class="vc-title">Sécurité</div>
+        <div class="vc-text">
+          Paiements 100% sécurisés via Wave, Orange Money et carte
+          bancaire. Vos données sont protégées avec les meilleurs standards.
+        </div>
+      </div>
+      <div class="valeur-card">
+        <div class="vc-icon">🌱</div>
+        <div class="vc-title">Local d'abord</div>
+        <div class="vc-text">
+          Nous privilégions les restaurants locaux sénégalais. Chaque
+          commande soutient l'économie locale de Dakar.
+        </div>
+      </div>
+      <div class="valeur-card">
+        <div class="vc-icon">💝</div>
+        <div class="vc-title">Qualité</div>
+        <div class="vc-text">
+          Chaque restaurant partenaire est sélectionné avec soin. La
+          qualité des plats est notre priorité absolue.
+        </div>
+      </div>
+      <div class="valeur-card">
+        <div class="vc-icon">🤝</div>
+        <div class="vc-title">Partenariat</div>
+        <div class="vc-text">
+          Nous grandissons ensemble avec nos restaurants partenaires.
+          Leur succès est notre succès.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMENT ÇA MARCHE -->
+  <section class="section">
+    <div class="section-badge">Simple & Rapide</div>
+    <h2 class="section-title">Comment ça <span>marche</span> ?</h2>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="sc-number">01</div>
+        <div class="sc-icon">📍</div>
+        <div class="sc-title">Choisissez votre adresse</div>
+        <div class="sc-desc">
+          Entrez votre adresse à Dakar pour voir les restaurants
+          disponibles près de vous en temps réel.
+        </div>
+        <div class="sc-arrow">→</div>
+      </div>
+      <div class="step-card">
+        <div class="sc-number">02</div>
+        <div class="sc-icon">🍽️</div>
+        <div class="sc-title">Sélectionnez vos plats</div>
+        <div class="sc-desc">
+          Parcourez 120+ restaurants, lisez les avis et ajoutez
+          vos plats préférés au panier.
+        </div>
+        <div class="sc-arrow">→</div>
+      </div>
+      <div class="step-card">
+        <div class="sc-number">03</div>
+        <div class="sc-icon">💳</div>
+        <div class="sc-title">Payez en toute sécurité</div>
+        <div class="sc-desc">
+          Wave, Orange Money, carte bancaire ou espèces.
+          Paiement 100% sécurisé et rapide.
+        </div>
+        <div class="sc-arrow">→</div>
+      </div>
+      <div class="step-card">
+        <div class="sc-number">04</div>
+        <div class="sc-icon">🛵</div>
+        <div class="sc-title">Recevez chez vous</div>
+        <div class="sc-desc">
+          Suivez votre livreur en temps réel sur la carte.
+          Livraison garantie en 30 minutes.
+        </div>
+        <div class="sc-arrow last">✓</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAIEMENTS -->
+  <section class="section section-dark">
+    <div class="section-badge">Paiements</div>
+    <h2 class="section-title">Modes de paiement <span>acceptés</span></h2>
+    <div class="pay-grid">
+      <div class="pay-card">
+        <div class="pay-icon">📱</div>
+        <div class="pay-name">Wave</div>
+        <div class="pay-desc">Paiement mobile instantané · Sénégal</div>
+        <div class="pay-badge">Le plus populaire</div>
+      </div>
+      <div class="pay-card">
+        <div class="pay-icon">🟠</div>
+        <div class="pay-name">Orange Money</div>
+        <div class="pay-desc">Mobile money Orange · Sénégal</div>
+      </div>
+      <div class="pay-card">
+        <div class="pay-icon">💳</div>
+        <div class="pay-name">Carte bancaire</div>
+        <div class="pay-desc">Visa · Mastercard · CB</div>
+      </div>
+      <div class="pay-card">
+        <div class="pay-icon">💵</div>
+        <div class="pay-name">Espèces</div>
+        <div class="pay-desc">Paiement à la livraison</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ÉQUIPE -->
+  <section class="section">
+    <div class="section-badge">L'équipe</div>
+    <h2 class="section-title">Les créateurs de <span>QuickBite SN</span></h2>
+    <p class="section-sub">
+      Quatre étudiants passionnés de l'UNCHK Promotion 8 — Master 1 Développement Web et Mobile
+    </p>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="tc-glow glow-1"></div>
+        <div class="tc-avatar av-1">IF</div>
+        <div class="tc-name">Ibrahima Faye</div>
+        <div class="tc-role">Lead Full Stack Developer</div>
+        <div class="tc-brand">KhalilTech</div>
+        <div class="tc-skills">
+          <span>Angular</span><span>Node.js</span><span>MySQL</span>
+        </div>
+        <div class="tc-social">
+          <span class="tc-link">📧</span>
+          <span class="tc-link">💼</span>
+          <span class="tc-link">🐙</span>
+        </div>
+      </div>
+      <div class="team-card">
+        <div class="tc-glow glow-2"></div>
+        <div class="tc-avatar av-2">MB</div>
+        <div class="tc-name">Mansour Ba</div>
+        <div class="tc-role">Backend Developer</div>
+        <div class="tc-brand">UNCHK · Promo 8</div>
+        <div class="tc-skills">
+          <span>Node.js</span><span>Express</span><span>API</span>
+        </div>
+        <div class="tc-social">
+          <span class="tc-link">📧</span>
+          <span class="tc-link">💼</span>
+          <span class="tc-link">🐙</span>
+        </div>
+      </div>
+      <div class="team-card">
+        <div class="tc-glow glow-3"></div>
+        <div class="tc-avatar av-3">ST</div>
+        <div class="tc-name">Seydou Tall</div>
+        <div class="tc-role">Frontend Developer</div>
+        <div class="tc-brand">UNCHK · Promo 8</div>
+        <div class="tc-skills">
+          <span>Angular</span><span>SCSS</span><span>UI/UX</span>
+        </div>
+        <div class="tc-social">
+          <span class="tc-link">📧</span>
+          <span class="tc-link">💼</span>
+          <span class="tc-link">🐙</span>
+        </div>
+      </div>
+      <div class="team-card">
+        <div class="tc-glow glow-4"></div>
+        <div class="tc-avatar av-4">DB</div>
+        <div class="tc-name">Diouma Baldé</div>
+        <div class="tc-role">UI/UX Designer</div>
+        <div class="tc-brand">UNCHK · Promo 8</div>
+        <div class="tc-skills">
+          <span>Figma</span><span>Design</span><span>Mobile</span>
+        </div>
+        <div class="tc-social">
+          <span class="tc-link">📧</span>
+          <span class="tc-link">💼</span>
+          <span class="tc-link">🐙</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ZONES LIVRAISON -->
+  <section class="section section-dark">
+    <div class="section-badge">Couverture</div>
+    <h2 class="section-title">Zones de <span>livraison</span></h2>
+    <div class="zones-grid">
+      <div class="zone-card" *ngFor="let zone of zones">
+        <div class="zc-dot"></div>
+        <div class="zc-name">{{ zone.nom }}</div>
+        <div class="zc-temps">⏱ {{ zone.temps }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TÉMOIGNAGES -->
+  <section class="section">
+    <div class="section-badge">Témoignages</div>
+    <h2 class="section-title">Ce que disent nos <span>clients</span></h2>
+    <div class="temoignages-grid">
+      <div class="temo-card" *ngFor="let t of temoignages">
+        <div class="temo-stars">⭐⭐⭐⭐⭐</div>
+        <div class="temo-text">"{{ t.texte }}"</div>
+        <div class="temo-author">
+          <div class="ta-avatar">{{ t.initiales }}</div>
+          <div>
+            <div class="ta-name">{{ t.nom }}</div>
+            <div class="ta-ville">{{ t.ville }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section section-dark">
+    <div class="section-badge">FAQ</div>
+    <h2 class="section-title">Questions <span>fréquentes</span></h2>
+    <div class="faq-list">
+      <div class="faq-item" *ngFor="let f of faqs" (click)="f.ouvert = !f.ouvert">
+        <div class="faq-question">
+          <span>{{ f.question }}</span>
+          <span class="faq-arrow" [class.ouvert]="f.ouvert">{{ f.ouvert ? '−' : '+' }}</span>
+        </div>
+        <div class="faq-answer" [class.show]="f.ouvert">{{ f.reponse }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta-section">
+    <div class="cta-bg"></div>
+    <div class="cta-content">
+      <div class="cta-badge">🎉 Rejoignez-nous</div>
+      <h2 class="cta-title">Prêt à commander ?</h2>
+      <p class="cta-sub">
+        Rejoignez des milliers de Dakarois qui font confiance à QuickBite SN
+        pour leurs repas quotidiens. Premier repas livré en 30 minutes garanti !
+      </p>
+      <div class="cta-actions">
+        <button class="btn-cta-primary" (click)="goToMenu()">
+          🍽️ Commander maintenant
+        </button>
+        <button class="btn-cta-secondary" (click)="goToRegister()">
+          ✨ Créer un compte gratuit
+        </button>
+      </div>
+      <div class="cta-garanties">
+        <span>✅ Livraison en 30 min</span>
+        <span>✅ Paiement sécurisé</span>
+        <span>✅ Satisfaction garantie</span>
+        <span>✅ Sans frais cachés</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER COMPLET -->
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="ft-brand">
+        <div class="footer-logo">
+          <div class="logo-icon">🍔</div>
+          <div class="logo-text">Quick<span>Bite</span> SN</div>
+        </div>
+        <p class="ft-desc">
+          La plateforme de livraison de repas #1 à Dakar, Sénégal.
+          Commandez vos plats préférés en quelques clics.
+        </p>
+        <div class="ft-social">
+          <div class="fs-icon">📘</div>
+          <div class="fs-icon">📸</div>
+          <div class="fs-icon">🐦</div>
+          <div class="fs-icon">▶️</div>
+        </div>
+      </div>
+
+      <div class="ft-links">
+        <div class="ftl-title">Navigation</div>
+        <a class="ftl-link" (click)="goToAccueil()">🏠 Accueil</a>
+        <a class="ftl-link" (click)="goToMenu()">🏪 Restaurants</a>
+        <a class="ftl-link" (click)="goToMenu()">🍽️ Menu</a>
+        <a class="ftl-link" (click)="goToMenu()">🎁 Offres spéciales</a>
+        <a class="ftl-link">ℹ️ À propos</a>
+      </div>
+
+      <div class="ft-links">
+        <div class="ftl-title">Compte</div>
+        <a class="ftl-link" (click)="goToLogin()">🔐 Connexion</a>
+        <a class="ftl-link" (click)="goToRegister()">✨ Inscription gratuite</a>
+        <a class="ftl-link" (click)="goToPanier()">🛒 Mon panier</a>
+        <a class="ftl-link">📦 Mes commandes</a>
+        <a class="ftl-link">👤 Mon profil</a>
+      </div>
+
+      <div class="ft-links">
+        <div class="ftl-title">Contact</div>
+        <div class="ftl-link">📞 +221 77 000 00 00</div>
+        <div class="ftl-link">📧 contact&#64;quickbite.sn</div>
+        <div class="ftl-link">📍 Dakar, Sénégal</div>
+        <div class="ftl-link">⏰ 7j/7 · 08h–23h</div>
+        <div class="ftl-link">💬 WhatsApp disponible</div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="fb-left">
+        © 2026 QuickBite SN · Tous droits réservés · Fait avec ❤️ à Dakar
+      </div>
+      <div class="fb-right">
+        <span>🎓 UNCHK · Master 1 · Promotion 8</span>
+        <span>·</span>
+        <span>Angular 21 + Node.js + MySQL</span>
+      </div>
+    </div>
+  </footer>
+
+</div>

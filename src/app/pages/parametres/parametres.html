@@ -1,0 +1,448 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">{{ t('Principal', 'Main') }}</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item" (click)="naviguer('commandes')"><span class="nav-icon">📋</span>{{ t('Commandes', 'Orders') }}</a>
+      <a class="nav-item" (click)="naviguer('menu')"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item" (click)="naviguer('notifications')"><span class="nav-icon">🔔</span>{{ t('Notifications', 'Notifications') }}</a>
+      <div class="nav-section">{{ t('Gestion', 'Management') }}</div>
+      <a class="nav-item" (click)="naviguer('utilisateurs')"><span class="nav-icon">👥</span>{{ t('Utilisateurs', 'Users') }}</a>
+      <a class="nav-item" (click)="naviguer('livreurs')"><span class="nav-icon">🛵</span>{{ t('Livreurs', 'Delivery') }}</a>
+      <a class="nav-item" (click)="naviguer('finances')"><span class="nav-icon">💰</span>{{ t('Finances', 'Finances') }}</a>
+      <a class="nav-item" (click)="naviguer('zones')"><span class="nav-icon">📍</span>{{ t('Zones livraison', 'Delivery zones') }}</a>
+      <div class="nav-section">{{ t('Analytique', 'Analytics') }}</div>
+      <a class="nav-item" (click)="naviguer('statistiques')"><span class="nav-icon">📈</span>{{ t('Statistiques', 'Statistics') }}</a>
+      <a class="nav-item" (click)="naviguer('avis')"><span class="nav-icon">⭐</span>{{ t('Avis clients', 'Reviews') }}</a>
+      <a class="nav-item" (click)="naviguer('rapports')"><span class="nav-icon">📄</span>{{ t('Rapports PDF', 'PDF Reports') }}</a>
+      <div class="nav-section">{{ t('Système', 'System') }}</div>
+      <a class="nav-item active"><span class="nav-icon">⚙️</span>{{ t('Paramètres', 'Settings') }}</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>{{ t('Déconnexion', 'Logout') }}</a>
+    </div>
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · {{ t('En ligne', 'Online') }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <div class="ph-title">{{ t('Paramètres ⚙️', 'Settings ⚙️') }}</div>
+    <div class="ph-sub">{{ t('Configurez votre profil, préférences et sécurité', 'Configure your profile, preferences and security') }}</div>
+
+    <div class="settings-layout">
+
+      <!-- MENU SETTINGS -->
+      <div class="settings-menu">
+        <div class="sm-item" [class.active]="sectionActive === 'profil'" (click)="changerSection('profil')">
+          <span class="sm-icon">🏪</span>{{ t('Profil', 'Profile') }}
+        </div>
+        <div class="sm-item" [class.active]="sectionActive === 'horaires'" (click)="changerSection('horaires')">
+          <span class="sm-icon">🕐</span>{{ t('Horaires', 'Hours') }}
+        </div>
+        <div class="sm-item" [class.active]="sectionActive === 'paiements'" (click)="changerSection('paiements')">
+          <span class="sm-icon">💰</span>{{ t('Paiements', 'Payments') }}
+        </div>
+        <div class="sm-item" [class.active]="sectionActive === 'notifications'" (click)="changerSection('notifications')">
+          <span class="sm-icon">🔔</span>{{ t('Notifications', 'Notifications') }}
+        </div>
+        <div class="sm-item" [class.active]="sectionActive === 'langue'" (click)="changerSection('langue')">
+          <span class="sm-icon">🌐</span>{{ t('Langue (i18n)', 'Language') }}
+        </div>
+        <div class="sm-item" [class.active]="sectionActive === 'theme'" (click)="changerSection('theme')">
+          <span class="sm-icon">🎨</span>{{ t('Thème', 'Theme') }}
+        </div>
+        <div class="sm-item" [class.active]="sectionActive === 'securite'" (click)="changerSection('securite')">
+          <span class="sm-icon">🔒</span>{{ t('Sécurité & JWT', 'Security & JWT') }}
+        </div>
+        <div class="sm-item" [class.active]="sectionActive === 'audit'" (click)="changerSection('audit')">
+          <span class="sm-icon">📋</span>{{ t("Journal d'audit", 'Audit Log') }}
+        </div>
+      </div>
+
+      <!-- CONTENU -->
+      <div class="settings-content">
+
+        <!-- ══ PROFIL ══ -->
+        <div class="s-card" *ngIf="sectionActive === 'profil'">
+          <div class="sc-title">🏪 {{ t('Profil administrateur', 'Admin Profile') }}</div>
+          <div class="sc-sub">{{ t('Vos informations personnelles et de compte', 'Your personal and account information') }}</div>
+
+          <div class="profile-row">
+            <div class="profile-logo">👤</div>
+            <div class="profile-meta">
+              <div class="pm-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+              <div class="pm-id">{{ admin?.email }}</div>
+              <div class="pm-rating">⚙️ {{ t('Administrateur QuickBite SN', 'QuickBite SN Administrator') }}</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">{{ t('Nom complet', 'Full name') }}</label>
+              <input class="form-input" type="text" [(ngModel)]="profil.nom" (input)="marquerModifie()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ t('Ville', 'City') }}</label>
+              <input class="form-input" type="text" [(ngModel)]="profil.ville" (input)="marquerModifie()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input class="form-input" type="email" [(ngModel)]="profil.email" (input)="marquerModifie()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ t('Téléphone', 'Phone') }}</label>
+              <input class="form-input" type="tel" [(ngModel)]="profil.telephone" (input)="marquerModifie()">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">{{ t('Description', 'Description') }}</label>
+              <textarea class="form-input form-textarea" [(ngModel)]="profil.description"
+                        (input)="marquerModifie()"
+                        [placeholder]="t('Décrivez votre rôle...', 'Describe your role...')"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ HORAIRES ══ -->
+        <div class="s-card" *ngIf="sectionActive === 'horaires'">
+          <div class="sc-title">🕐 {{ t("Horaires d'ouverture", 'Opening Hours') }}</div>
+          <div class="sc-sub">{{ t('Définissez quand votre restaurant accepte des commandes', 'Define when your restaurant accepts orders') }}</div>
+          <div class="hours-grid">
+            <div class="hour-row" *ngFor="let h of horaires">
+              <div class="hour-day" [class.closed]="!h.ouvert">{{ h.jour }}</div>
+              <div class="hour-inputs">
+                <input class="hour-input" type="time" [(ngModel)]="h.debut"
+                       [disabled]="!h.ouvert" (change)="marquerModifie()">
+                <span class="hour-sep">→</span>
+                <input class="hour-input" type="time" [(ngModel)]="h.fin"
+                       [disabled]="!h.ouvert" (change)="marquerModifie()">
+              </div>
+              <div class="hour-toggle" [class.on]="h.ouvert"
+                   (click)="h.ouvert = !h.ouvert; marquerModifie()">
+                <div class="ht-thumb"></div>
+              </div>
+              <span class="hour-tag" [class.ht-open]="h.ouvert" [class.ht-closed]="!h.ouvert">
+                {{ h.ouvert ? t('Ouvert', 'Open') : t('Fermé', 'Closed') }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ PAIEMENTS ══ -->
+        <div class="s-card" *ngIf="sectionActive === 'paiements'">
+          <div class="sc-title">💰 {{ t('Modes de paiement', 'Payment Methods') }}</div>
+          <div class="sc-sub">{{ t('Choisissez les modes de paiement acceptés', 'Choose accepted payment methods') }}</div>
+          <div class="toggle-list">
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">📱 Wave</div>
+                <div class="tr-desc">{{ t('Paiement mobile Wave Sénégal', 'Wave mobile payment Senegal') }}</div>
+              </div>
+              <div class="toggle-track" [class.on]="paiements.wave" [class.off]="!paiements.wave"
+                   (click)="paiements.wave = !paiements.wave; marquerModifie()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">🟠 Orange Money</div>
+                <div class="tr-desc">{{ t('Paiement mobile Orange Money', 'Orange Money mobile payment') }}</div>
+              </div>
+              <div class="toggle-track" [class.on]="paiements.orange_money" [class.off]="!paiements.orange_money"
+                   (click)="paiements.orange_money = !paiements.orange_money; marquerModifie()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">💳 {{ t('Carte bancaire', 'Bank card') }}</div>
+                <div class="tr-desc">{{ t('Visa, Mastercard, CB', 'Visa, Mastercard, CB') }}</div>
+              </div>
+              <div class="toggle-track" [class.on]="paiements.carte" [class.off]="!paiements.carte"
+                   (click)="paiements.carte = !paiements.carte; marquerModifie()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">💵 {{ t('Espèces à la livraison', 'Cash on delivery') }}</div>
+                <div class="tr-desc">{{ t('Paiement en main propre au livreur', 'Cash payment to delivery person') }}</div>
+              </div>
+              <div class="toggle-track" [class.on]="paiements.especes" [class.off]="!paiements.especes"
+                   (click)="paiements.especes = !paiements.especes; marquerModifie()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ NOTIFICATIONS ══ -->
+        <div class="s-card" *ngIf="sectionActive === 'notifications'">
+          <div class="sc-title">🔔 {{ t('Notifications', 'Notifications') }}</div>
+          <div class="sc-sub">{{ t('Choisissez comment être notifié', 'Choose how to be notified') }}</div>
+          <div class="toggle-list">
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">{{ t('Nouvelles commandes', 'New orders') }}</div>
+                <div class="tr-desc">{{ t('Son + push pour chaque commande reçue', 'Sound + push for each order received') }}</div>
+              </div>
+              <div class="toggle-track" [class.on]="notifications.commandes" [class.off]="!notifications.commandes"
+                   (click)="notifications.commandes = !notifications.commandes; marquerModifie()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">{{ t('Suivi livraison', 'Delivery tracking') }}</div>
+                <div class="tr-desc">{{ t('Mises à jour temps réel des statuts', 'Real-time status updates') }}</div>
+              </div>
+              <div class="toggle-track" [class.on]="notifications.livraison" [class.off]="!notifications.livraison"
+                   (click)="notifications.livraison = !notifications.livraison; marquerModifie()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">{{ t('Avis clients', 'Customer reviews') }}</div>
+                <div class="tr-desc">{{ t('Notification quand un avis est laissé', 'Notification when a review is left') }}</div>
+              </div>
+              <div class="toggle-track" [class.on]="notifications.avis" [class.off]="!notifications.avis"
+                   (click)="notifications.avis = !notifications.avis; marquerModifie()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">{{ t('Rapports hebdomadaires', 'Weekly reports') }}</div>
+                <div class="tr-desc">{{ t('Résumé chaque lundi par email', 'Summary every Monday by email') }}</div>
+              </div>
+              <div class="toggle-track" [class.on]="notifications.rapports" [class.off]="!notifications.rapports"
+                   (click)="notifications.rapports = !notifications.rapports; marquerModifie()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">{{ t('Alertes stock bas', 'Low stock alerts') }}</div>
+                <div class="tr-desc">{{ t('Quand un plat est presque épuisé', 'When a dish is almost sold out') }}</div>
+              </div>
+              <div class="toggle-track" [class.on]="notifications.stock" [class.off]="!notifications.stock"
+                   (click)="notifications.stock = !notifications.stock; marquerModifie()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ LANGUE ══ -->
+        <div class="s-card" *ngIf="sectionActive === 'langue'">
+          <div class="sc-title">🌐 {{ t('Langue (i18n)', 'Language (i18n)') }}</div>
+          <div class="sc-sub">{{ t("Sélectionnez la langue de l'interface", 'Select the interface language') }}</div>
+          <div class="lang-grid">
+            <div class="lang-opt" [class.selected]="langue === 'fr'" (click)="changerLangue('fr')">
+              <div class="lang-flag">🇫🇷</div>
+              <div>
+                <div class="lang-name">Français</div>
+                <div class="lang-region">France · Sénégal · Afrique de l'Ouest</div>
+              </div>
+            </div>
+            <div class="lang-opt" [class.selected]="langue === 'en'" (click)="changerLangue('en')">
+              <div class="lang-flag">🇬🇧</div>
+              <div>
+                <div class="lang-name">English</div>
+                <div class="lang-region">United Kingdom · International</div>
+              </div>
+            </div>
+          </div>
+          <div class="lang-active">
+            {{ t('Langue active :', 'Active language:') }}
+            <strong>{{ langue === 'fr' ? '🇫🇷 Français' : '🇬🇧 English' }}</strong>
+          </div>
+        </div>
+
+        <!-- ══ THÈME ══ -->
+        <div class="s-card" *ngIf="sectionActive === 'theme'">
+          <div class="sc-title">🎨 {{ t("Thème de l'interface", 'Interface Theme') }}</div>
+          <div class="sc-sub">{{ t("Choisissez l'apparence de votre tableau de bord", 'Choose your dashboard appearance') }}</div>
+          <div class="theme-grid">
+            <div class="theme-opt" [class.selected]="theme === 'dark'" (click)="changerTheme('dark')">
+              <div class="theme-preview tp-dark"></div>
+              <div class="theme-name">🌙 {{ t('Sombre', 'Dark') }}</div>
+              <div class="theme-desc">{{ t('Mode nuit', 'Night mode') }} {{ theme === 'dark' ? '· ' + t('Actuel', 'Current') : '' }}</div>
+            </div>
+            <div class="theme-opt" [class.selected]="theme === 'light'" (click)="changerTheme('light')">
+              <div class="theme-preview tp-light"></div>
+              <div class="theme-name">☀️ {{ t('Clair', 'Light') }}</div>
+              <div class="theme-desc">{{ t('Mode jour', 'Day mode') }} {{ theme === 'light' ? '· ' + t('Actuel', 'Current') : '' }}</div>
+            </div>
+            <div class="theme-opt" [class.selected]="theme === 'auto'" (click)="changerTheme('auto')">
+              <div class="theme-preview tp-auto"></div>
+              <div class="theme-name">🔄 Auto</div>
+              <div class="theme-desc">{{ t('Suit le système', 'Follows system') }} {{ theme === 'auto' ? '· ' + t('Actuel', 'Current') : '' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SÉCURITÉ ══ -->
+        <div class="s-card" *ngIf="sectionActive === 'securite'">
+          <div class="sc-title">🔒 {{ t('Sécurité & JWT', 'Security & JWT') }}</div>
+          <div class="sc-sub">{{ t('Gérez votre sécurité et vos tokens d\'accès', 'Manage your security and access tokens') }}</div>
+
+          <!-- TOKEN JWT -->
+          <div class="jwt-box">
+            <div class="jwt-label">{{ t('Token JWT actif', 'Active JWT Token') }}</div>
+            <div class="jwt-token">{{ securite.token.substring(0, 60) }}...</div>
+            <button class="btn-copy" (click)="copierToken()">📋 {{ t('Copier', 'Copy') }}</button>
+          </div>
+
+          <!-- DURÉE JWT -->
+          <div class="form-group" style="margin-top:16px">
+            <label class="form-label">{{ t('Durée de session', 'Session duration') }}</label>
+            <select class="form-input" [(ngModel)]="securite.jwt_duree" (change)="marquerModifie()">
+              <option value="1h">1 {{ t('heure', 'hour') }}</option>
+              <option value="6h">6 {{ t('heures', 'hours') }}</option>
+              <option value="24h">24 {{ t('heures', 'hours') }}</option>
+              <option value="7d">7 {{ t('jours', 'days') }}</option>
+              <option value="30d">30 {{ t('jours', 'days') }}</option>
+            </select>
+          </div>
+
+          <!-- DOUBLE AUTH -->
+          <div class="toggle-list" style="margin-top:8px">
+            <div class="toggle-row">
+              <div class="tr-info">
+                <div class="tr-name">{{ t('Double authentification (2FA)', 'Two-factor authentication (2FA)') }}</div>
+                <div class="tr-desc">{{ t('Sécurité renforcée par OTP email', 'Enhanced security with OTP email') }}</div>
+              </div>
+              <div class="toggle-track" [class.on]="securite.double_auth" [class.off]="!securite.double_auth"
+                   (click)="securite.double_auth = !securite.double_auth; marquerModifie()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHANGER MDP -->
+          <div class="mdp-section">
+            <div class="mdp-title">🔑 {{ t('Changer le mot de passe', 'Change password') }}</div>
+
+            <div class="error-alert" *ngIf="erreurMdp">⚠️ {{ erreurMdp }}</div>
+            <div class="success-alert" *ngIf="successMdp">✅ {{ successMdp }}</div>
+
+            <div class="form-group">
+              <label class="form-label">{{ t('Mot de passe actuel', 'Current password') }}</label>
+              <input class="form-input" type="password" [(ngModel)]="ancienMdp"
+                     [placeholder]="t('••••••••', '••••••••')">
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">{{ t('Nouveau mot de passe', 'New password') }}</label>
+                <input class="form-input" type="password" [(ngModel)]="nouveauMdp"
+                       [placeholder]="t('Min. 8 caractères', 'Min. 8 characters')">
+              </div>
+              <div class="form-group">
+                <label class="form-label">{{ t('Confirmer', 'Confirm') }}</label>
+                <input class="form-input" type="password" [(ngModel)]="confirmerMdp"
+                       [placeholder]="t('Répétez', 'Repeat')">
+              </div>
+            </div>
+            <button class="btn-mdp" (click)="changerMotDePasse()" [disabled]="loadingMdp">
+              <span *ngIf="!loadingMdp">🔑 {{ t('Changer le mot de passe', 'Change password') }}</span>
+              <span *ngIf="loadingMdp">⏳ {{ t('Mise à jour...', 'Updating...') }}</span>
+            </button>
+          </div>
+
+          <!-- SESSIONS -->
+          <div class="sessions-box">
+            <div class="sb-title">{{ t('Sessions actives', 'Active sessions') }}</div>
+            <div class="session-row">
+              <div>
+                <div class="sr-name">{{ t('Session actuelle', 'Current session') }} · Chrome · Dakar</div>
+                <div class="sr-date">{{ t('Connecté maintenant', 'Connected now') }}</div>
+              </div>
+              <div class="sr-current">{{ t('Actuelle', 'Current') }}</div>
+            </div>
+            <button class="btn-deconnect" (click)="deconnecterSessions()">
+              🚪 {{ t('Déconnecter toutes les sessions', 'Disconnect all sessions') }}
+            </button>
+          </div>
+        </div>
+
+        <!-- ══ JOURNAL AUDIT ══ -->
+        <div class="s-card" *ngIf="sectionActive === 'audit'">
+          <div class="sc-title">📋 {{ t("Journal d'audit", 'Audit Log') }}</div>
+          <div class="sc-sub">{{ t('Toutes les actions effectuées sur le système', 'All actions performed on the system') }}</div>
+
+          <div class="audit-list">
+            <div class="audit-row" *ngFor="let a of journalAudit">
+              <div class="audit-icon">{{ a.icone }}</div>
+              <div class="audit-info">
+                <div class="audit-action">{{ a.action }}</div>
+                <div class="audit-user">{{ a.user }}</div>
+              </div>
+              <div class="audit-date">{{ a.date }}</div>
+            </div>
+            <div class="audit-empty" *ngIf="journalAudit.length === 0">
+              {{ t('Aucune activité enregistrée', 'No activity recorded') }}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+  <!-- SAVE BAR -->
+  <div class="save-bar" [class.visible]="modifie">
+    <div class="save-msg">
+      <div class="save-dot"></div>
+      {{ t('Modifications non enregistrées', 'Unsaved changes') }}
+    </div>
+    <div class="save-actions">
+      <button class="btn-cancel-save" (click)="annuler()">{{ t('Annuler', 'Cancel') }}</button>
+      <button class="btn-save" (click)="enregistrer()">
+        💾 {{ t('Enregistrer', 'Save') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- SUCCESS TOAST -->
+  <div class="toast-success" [class.show]="saveSuccess">
+    ✅ {{ t('Paramètres enregistrés avec succès !', 'Settings saved successfully!') }}
+  </div>
+
+</div>

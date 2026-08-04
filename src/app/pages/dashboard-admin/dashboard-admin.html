@@ -1,0 +1,275 @@
+<div class="dashboard-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer le menu</button>
+
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" [class.active]="navActive === 'dashboard'" (click)="naviguer('dashboard')">
+        <span class="nav-icon">📊</span>Dashboard
+      </a>
+      <a class="nav-item" [class.active]="navActive === 'commandes'" (click)="naviguer('commandes')">
+        <span class="nav-icon">📋</span>Commandes
+        <span class="nav-badge">{{ kpis.commandes }}</span>
+      </a>
+      <a class="nav-item" [class.active]="navActive === 'menu'" (click)="naviguer('menu')">
+        <span class="nav-icon">🍽️</span>Menu
+      </a>
+      <a class="nav-item" [class.active]="navActive === 'notifications'" (click)="naviguer('notifications')">
+        <span class="nav-icon">🔔</span>Notifications
+      </a>
+
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" [class.active]="navActive === 'utilisateurs'" (click)="naviguer('utilisateurs')">
+        <span class="nav-icon">👥</span>Utilisateurs
+      </a>
+      <a class="nav-item" [class.active]="navActive === 'livreurs'" (click)="naviguer('livreurs')">
+        <span class="nav-icon">🛵</span>Livreurs
+      </a>
+      <a class="nav-item" [class.active]="navActive === 'finances'" (click)="naviguer('finances')">
+        <span class="nav-icon">💰</span>Finances
+      </a>
+      <a class="nav-item" [class.active]="navActive === 'zones'" (click)="naviguer('zones')">
+        <span class="nav-icon">📍</span>Zones livraison
+      </a>
+
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item" [class.active]="navActive === 'statistiques'" (click)="naviguer('statistiques')">
+        <span class="nav-icon">📈</span>Statistiques
+      </a>
+      <a class="nav-item" [class.active]="navActive === 'avis'" (click)="naviguer('avis')">
+        <span class="nav-icon">⭐</span>Avis clients
+      </a>
+      <a class="nav-item" [class.active]="navActive === 'rapports'" (click)="naviguer('rapports')">
+        <span class="nav-icon">📄</span>Rapports PDF
+      </a>
+
+      <div class="nav-section">Système</div>
+      <a class="nav-item" [class.active]="navActive === 'parametres'" (click)="naviguer('parametres')">
+        <span class="nav-icon">⚙️</span>Paramètres
+      </a>
+      <a class="nav-item" (click)="deconnecter()">
+        <span class="nav-icon">🚪</span>Déconnexion
+      </a>
+    </div>
+
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="ph-left">
+        <div class="ph-sub">{{ dateAujourdhui }}</div>
+        <div class="ph-title">Dashboard 📊</div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-sm" (click)="exporterPDF()">📄 Exporter PDF</button>
+        <button class="btn-sm" (click)="exporterExcel()">📊 Exporter Excel</button>
+        <button class="btn-primary" (click)="ajouterPlat()">+ Nouveau plat</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-glow" style="background:#FFD700"></div>
+        <div class="kpi-label">💰 Revenus total</div>
+        <div class="kpi-value" style="color:#FFD700">{{ formaterMontant(kpis.revenus) }}</div>
+        <div class="kpi-delta delta-up">↑ Commandes livrées</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-glow" style="background:#F5A623"></div>
+        <div class="kpi-label">📦 Total commandes</div>
+        <div class="kpi-value" style="color:#F5A623">{{ kpis.commandes }}</div>
+        <div class="kpi-delta delta-up">↑ Toutes commandes</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-glow" style="background:#22A86A"></div>
+        <div class="kpi-label">👥 Clients actifs</div>
+        <div class="kpi-value" style="color:#22A86A">{{ kpis.clients }}</div>
+        <div class="kpi-delta delta-up">↑ Comptes clients</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-glow" style="background:#2563EB"></div>
+        <div class="kpi-label">⭐ Note moyenne</div>
+        <div class="kpi-value" style="color:#FFFFFF">4.8</div>
+        <div class="kpi-delta delta-neutral">→ Stable · 234 avis</div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Revenus & Commandes</div>
+          <div class="chart-tabs">
+            <button class="ctab">7j</button>
+            <button class="ctab active">30j</button>
+            <button class="ctab">3m</button>
+          </div>
+        </div>
+        <canvas id="revenueChart" height="110"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Par catégorie</div>
+        </div>
+        <canvas id="catChart" height="160"></canvas>
+      </div>
+    </div>
+
+    <!-- TABLE COMMANDES -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="chart-title">Commandes récentes</div>
+        <div class="table-actions">
+          <input class="search-input"
+                 placeholder="🔍 Rechercher..."
+                 [(ngModel)]="searchCommande"
+                 (input)="filtrerCommandes()">
+          <button class="btn-sm">Filtrer ▾</button>
+        </div>
+      </div>
+
+      <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Chargement des commandes...</span>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading && commandesFiltrees.length === 0">
+        <div style="font-size:48px;margin-bottom:12px">📋</div>
+        <div style="font-size:16px;font-weight:700;color:#FFFFFF;margin-bottom:6px">Aucune commande</div>
+        <div style="font-size:13px;color:#6B8F77">Les commandes apparaîtront ici</div>
+      </div>
+
+      <div class="table-scroll" *ngIf="!loading && commandesFiltrees.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Client</th>
+              <th>Montant</th>
+              <th>Paiement</th>
+              <th>Statut</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of commandesFiltrees">
+              <td style="color:#6B8F77;font-weight:700">#{{ c.numero }}</td>
+              <td>
+                <div class="client-cell">
+                  <div class="c-avatar" style="background:linear-gradient(135deg,#22A86A,#144D35)">
+                    {{ c.client_nom?.charAt(0) || '?' }}
+                  </div>
+                  {{ c.client_nom }}
+                </div>
+              </td>
+              <td class="amount-cell">{{ formaterMontant(c.montant_total) }}</td>
+              <td>{{ c.mode_paiement }}</td>
+              <td>
+                <span class="status-pill" [ngClass]="getStatutClass(c.statut)">
+                  {{ getStatutLabel(c.statut) }}
+                </span>
+              </td>
+              <td style="color:#6B8F77">{{ c.created_at | date:'dd/MM HH:mm' }}</td>
+              <td>
+                <button class="action-btn">👁</button>
+                <button class="action-btn">✏️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BOTTOM GRID -->
+    <div class="bottom-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">🏆 Top plats</div>
+        </div>
+        <div class="top-list">
+          <div class="empty-state" *ngIf="topPlats.length === 0">
+            <div style="font-size:13px;color:#6B8F77;text-align:center;padding:20px">
+              Aucun plat populaire pour l'instant
+            </div>
+          </div>
+          <div class="top-row" *ngFor="let p of topPlats; let i = index">
+            <div class="top-rank">{{ i + 1 }}</div>
+            <div class="top-icon" [ngClass]="'ti-'+(i+1)">{{ p.emoji || '🍽️' }}</div>
+            <div class="top-info">
+              <div class="top-name">{{ p.nom }}</div>
+              <div class="top-sub">{{ p.nombre_commandes || 0 }} vendus</div>
+            </div>
+            <div class="top-revenue">{{ formaterMontant(p.prix * (p.nombre_commandes || 0)) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">🔔 Activité récente</div>
+        </div>
+        <div class="notif-list">
+          <div class="notif-row" *ngFor="let c of commandes.slice(0, 5)">
+            <div class="notif-dot" [ngClass]="{
+              'nd-orange': c.statut === 'nouvelle',
+              'nd-green': c.statut === 'livree',
+              'nd-blue': c.statut === 'preparation',
+              'nd-red': c.statut === 'annulee'
+            }"></div>
+            <div>
+              <div class="notif-text">Commande #{{ c.numero }} · {{ c.client_nom }}</div>
+              <div class="notif-time">{{ getStatutLabel(c.statut) }}</div>
+            </div>
+          </div>
+          <div *ngIf="commandes.length === 0" style="font-size:13px;color:#6B8F77;text-align:center;padding:20px">
+            Aucune activité récente
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOUTON HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

@@ -1,0 +1,455 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item active"><span class="nav-icon">📋</span>Commandes</a>
+      <a class="nav-item" (click)="naviguer('menu')"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item" (click)="naviguer('notifications')"><span class="nav-icon">🔔</span>Notifications</a>
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" (click)="naviguer('utilisateurs')"><span class="nav-icon">👥</span>Utilisateurs</a>
+      <a class="nav-item" (click)="naviguer('livreurs')"><span class="nav-icon">🛵</span>Livreurs</a>
+      <a class="nav-item" (click)="naviguer('finances')"><span class="nav-icon">💰</span>Finances</a>
+      <a class="nav-item" (click)="naviguer('zones')"><span class="nav-icon">📍</span>Zones livraison</a>
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item" (click)="naviguer('statistiques')"><span class="nav-icon">📈</span>Statistiques</a>
+      <a class="nav-item" (click)="naviguer('avis')"><span class="nav-icon">⭐</span>Avis clients</a>
+      <a class="nav-item" (click)="naviguer('rapports')"><span class="nav-icon">📄</span>Rapports PDF</a>
+      <div class="nav-section">Système</div>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span>Paramètres</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>Déconnexion</a>
+    </div>
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Gestion des commandes 📋</div>
+        <div class="ph-sub">Gérez toutes les commandes et assignez les livreurs</div>
+      </div>
+      <button class="btn-refresh" (click)="chargerCommandes(); chargerLivreurs()">🔄 Actualiser</button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des commandes...</span>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- ONGLETS FILTRE -->
+      <div class="onglets">
+        <button class="ong-btn" [class.active]="filtreActif === 'toutes'"
+                (click)="setFiltre('toutes')">
+          Toutes <span class="ong-badge">{{ stats.toutes }}</span>
+        </button>
+        <button class="ong-btn" [class.active]="filtreActif === 'nouvelles'"
+                (click)="setFiltre('nouvelles')">
+          🆕 Nouvelles <span class="ong-badge new">{{ stats.nouvelles }}</span>
+        </button>
+        <button class="ong-btn" [class.active]="filtreActif === 'preparation'"
+                (click)="setFiltre('preparation')">
+          🍳 Préparation <span class="ong-badge prep">{{ stats.preparation }}</span>
+        </button>
+        <button class="ong-btn" [class.active]="filtreActif === 'livraison'"
+                (click)="setFiltre('livraison')">
+          🛵 Livraison <span class="ong-badge livr">{{ stats.livraison }}</span>
+        </button>
+        <button class="ong-btn" [class.active]="filtreActif === 'livrees'"
+                (click)="setFiltre('livrees')">
+          ✅ Livrées <span class="ong-badge done">{{ stats.livrees }}</span>
+        </button>
+      </div>
+
+      <!-- KANBAN PAR STATUT -->
+      <div class="kanban">
+
+        <!-- NOUVELLES -->
+        <div class="k-col">
+          <div class="k-col-header new">
+            🆕 Nouvelles <span class="k-count">{{ stats.nouvelles }}</span>
+          </div>
+          <div class="k-empty" *ngIf="stats.nouvelles === 0">Aucune nouvelle commande</div>
+          <div class="k-card" *ngFor="let c of toutesCommandes"
+               [style.display]="c.statut === 'nouvelle' ? 'block' : 'none'">
+            <div class="kc-id">#{{ c.numero }}</div>
+            <div class="kc-client">{{ c.client_prenom }} {{ c.client_nom }}</div>
+            <div class="kc-price">{{ formaterMontant(c.montant_total) }}</div>
+            <div class="kc-livreur" [class.none]="!c.livreur_id">
+              🛵 {{ getLivreurNom(c) }}
+            </div>
+            <div class="kc-actions">
+              <button class="kc-btn" (click)="voirCommande(c)">👁 Voir</button>
+              <button class="kc-btn green" (click)="changerStatut(c, 'preparation')">→ Préparer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRÉPARATION -->
+        <div class="k-col">
+          <div class="k-col-header prep">
+            🍳 Préparation <span class="k-count">{{ stats.preparation }}</span>
+          </div>
+          <div class="k-empty" *ngIf="stats.preparation === 0">Aucune commande en préparation</div>
+          <div class="k-card" *ngFor="let c of toutesCommandes"
+               [style.display]="c.statut === 'preparation' ? 'block' : 'none'">
+            <div class="kc-id">#{{ c.numero }}</div>
+            <div class="kc-client">{{ c.client_prenom }} {{ c.client_nom }}</div>
+            <div class="kc-price">{{ formaterMontant(c.montant_total) }}</div>
+            <div class="kc-livreur" [class.none]="!c.livreur_id">
+              🛵 {{ getLivreurNom(c) }}
+            </div>
+            <div class="kc-actions">
+              <button class="kc-btn" (click)="voirCommande(c)">👁 Voir</button>
+              <button class="kc-btn orange" *ngIf="!c.livreur_id" (click)="voirCommande(c)">
+                🛵 Assigner
+              </button>
+              <button class="kc-btn green" *ngIf="c.livreur_id"
+                      (click)="changerStatut(c, 'en_livraison')">→ Livrer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVRAISON -->
+        <div class="k-col">
+          <div class="k-col-header livr">
+            🛵 Livraison <span class="k-count">{{ stats.livraison }}</span>
+          </div>
+          <div class="k-empty" *ngIf="stats.livraison === 0">Aucune commande en livraison</div>
+          <div class="k-card" *ngFor="let c of toutesCommandes"
+               [style.display]="c.statut === 'en_livraison' ? 'block' : 'none'">
+            <div class="kc-id">#{{ c.numero }}</div>
+            <div class="kc-client">{{ c.client_prenom }} {{ c.client_nom }}</div>
+            <div class="kc-price">{{ formaterMontant(c.montant_total) }}</div>
+            <div class="kc-livreur" [class.none]="!c.livreur_id">
+              🛵 {{ getLivreurNom(c) }}
+            </div>
+            <div class="kc-actions">
+              <button class="kc-btn" (click)="voirCommande(c)">👁 Voir</button>
+              <button class="kc-btn green" (click)="changerStatut(c, 'livree')">→ Livrée</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVRÉES -->
+        <div class="k-col">
+          <div class="k-col-header done">
+            ✅ Livrées <span class="k-count">{{ stats.livrees }}</span>
+          </div>
+          <div class="k-empty" *ngIf="stats.livrees === 0">Aucune commande livrée</div>
+          <div class="k-card done-card" *ngFor="let c of toutesCommandes"
+               [style.display]="c.statut === 'livree' ? 'block' : 'none'">
+            <div class="kc-id">#{{ c.numero }}</div>
+            <div class="kc-client">{{ c.client_prenom }} {{ c.client_nom }}</div>
+            <div class="kc-price">{{ formaterMontant(c.montant_total) }}</div>
+            <div class="kc-livreur" [class.none]="!c.livreur_id">
+              🛵 {{ getLivreurNom(c) }}
+            </div>
+            <span class="kc-status done">✅ Livré</span>
+            <div class="kc-actions">
+              <button class="kc-btn" (click)="voirCommande(c)">👁 Voir</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TABLEAU TOUTES LES COMMANDES -->
+      <div class="table-card">
+        <div class="tc-header">
+          <div class="tc-title">Toutes les commandes</div>
+          <div class="tc-filters">
+            <div class="search-box">
+              <input type="search" name="rech-cmd-qb" autocomplete="off"
+                     placeholder="🔍 Rechercher par ID, client..."
+                     [(ngModel)]="searchQuery" (input)="filtrer()">
+            </div>
+            <select class="filter-sel" [(ngModel)]="filtreStatut" (change)="filtrer()">
+              <option value="">Tous les statuts</option>
+              <option value="nouvelle">🆕 Nouvelle</option>
+              <option value="preparation">🍳 Préparation</option>
+              <option value="en_livraison">🛵 En livraison</option>
+              <option value="livree">✅ Livrée</option>
+              <option value="annulee">✗ Annulée</option>
+            </select>
+            <select class="filter-sel" [(ngModel)]="filtrePaiement" (change)="filtrer()">
+              <option value="">Tous les paiements</option>
+              <option value="wave">Wave</option>
+              <option value="orange_money">Orange Money</option>
+              <option value="carte">Carte</option>
+              <option value="especes">Espèces</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="commandesFiltrees.length === 0">
+          <div style="font-size:48px;margin-bottom:12px">📋</div>
+          <div style="font-size:16px;color:#FFFFFF;font-weight:700;margin-bottom:6px">Aucune commande</div>
+          <div style="font-size:13px;color:#6B8F77">Les commandes apparaîtront ici</div>
+        </div>
+
+        <div class="table-scroll" *ngIf="commandesFiltrees.length > 0">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>CLIENT</th>
+                <th>LIVREUR</th>
+                <th>MONTANT</th>
+                <th>PAIEMENT</th>
+                <th>STATUT</th>
+                <th>DATE</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of commandesFiltrees">
+                <td class="td-id">#{{ c.numero }}</td>
+                <td>
+                  <div class="td-client">
+                    <div class="client-avatar">{{ getClientInitiale(c) }}</div>
+                    <span>{{ c.client_prenom }} {{ c.client_nom }}</span>
+                  </div>
+                </td>
+                <td class="td-livreur" [class.no-livreur]="!c.livreur_id">
+                  {{ c.livreur_id ? getLivreurNom(c) : '— Non assigné' }}
+                </td>
+                <td class="td-montant">{{ formaterMontant(c.montant_total) }}</td>
+                <td class="td-paiement">{{ c.mode_paiement }}</td>
+                <td>
+                  <span class="status-pill" [ngClass]="getStatutClass(c.statut)">
+                    {{ getStatutLabel(c.statut) }}
+                  </span>
+                </td>
+                <td class="td-date">{{ c.created_at | date:'dd/MM HH:mm' }}</td>
+                <td>
+                  <div class="action-btns">
+                    <button class="ab-btn ab-view" (click)="voirCommande(c)" title="Voir détail">👁</button>
+                    <button class="ab-btn ab-assign" *ngIf="!c.livreur_id"
+                            (click)="voirCommande(c)" title="Assigner un livreur">🛵</button>
+                    <button class="ab-btn ab-del" (click)="supprimerCommande(c)" title="Supprimer">🗑</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+  <!-- ══ MODAL DÉTAIL COMMANDE ══ -->
+  <div class="modal-overlay" [class.show]="showDetailModal"
+       (click)="$event.target === $event.currentTarget && fermerDetail()">
+    <div class="modal-detail" *ngIf="commandeSelectionnee">
+      <div class="modal-header">
+        <div class="modal-title">📋 Détail · #{{ commandeSelectionnee.numero }}</div>
+        <button class="modal-close" (click)="fermerDetail()">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- ══ ASSIGNATION LIVREUR ══ -->
+        <div class="detail-section assign-section">
+          <div class="ds-title assign-title">🛵 Assignation du livreur</div>
+
+          <div class="assign-alert success" *ngIf="succesAssignation">
+            {{ succesAssignation }}
+          </div>
+          <div class="assign-alert error" *ngIf="erreurAssignation">
+            {{ erreurAssignation }}
+          </div>
+
+          <!-- LIVREUR DÉJÀ ASSIGNÉ -->
+          <div class="livreur-assigne" *ngIf="commandeSelectionnee.livreur_id">
+            <div class="la-avatar">🛵</div>
+            <div class="la-info">
+              <div class="la-label">Livreur assigné</div>
+              <div class="la-nom">{{ getLivreurNom(commandeSelectionnee) }}</div>
+            </div>
+            <button class="la-remove" (click)="retirerLivreur()" [disabled]="loadingAssignation">
+              ✕ Retirer
+            </button>
+          </div>
+
+          <!-- AUCUN LIVREUR -->
+          <div class="no-livreur-box" *ngIf="!commandeSelectionnee.livreur_id">
+            ⚠️ Aucun livreur n'est assigné à cette commande
+          </div>
+
+          <!-- SÉLECTION -->
+          <div class="assign-form">
+            <label class="assign-label">
+              {{ commandeSelectionnee.livreur_id ? 'Changer de livreur' : 'Choisir un livreur' }}
+            </label>
+
+            <div class="no-livreurs-msg" *ngIf="livreurs.length === 0">
+              Aucun livreur actif. Recrutez un livreur dans la page Livreurs.
+            </div>
+
+            <div class="assign-row" *ngIf="livreurs.length > 0">
+              <select class="assign-select" [(ngModel)]="livreurChoisi">
+                <option value="">— Sélectionner un livreur —</option>
+                <option *ngFor="let l of livreurs" [value]="l.id">
+                  {{ l.prenom }} {{ l.nom }} · {{ l.telephone || 'sans tél.' }}
+                </option>
+              </select>
+              <button class="btn-assign" (click)="assignerLivreur()" [disabled]="loadingAssignation">
+                <span *ngIf="!loadingAssignation">✅ Assigner</span>
+                <span *ngIf="loadingAssignation">⏳ ...</span>
+              </button>
+            </div>
+
+            <div class="assign-hint">
+              💡 Le livreur recevra une notification en temps réel et pourra discuter avec le client.
+            </div>
+          </div>
+        </div>
+
+        <!-- INFO -->
+        <div class="detail-section">
+          <div class="ds-title">Informations</div>
+          <div class="ds-row">
+            <span>Client</span>
+            <span>{{ commandeSelectionnee.client_prenom }} {{ commandeSelectionnee.client_nom }}</span>
+          </div>
+          <div class="ds-row">
+            <span>Téléphone</span>
+            <span>{{ commandeSelectionnee.client_telephone || '—' }}</span>
+          </div>
+          <div class="ds-row">
+            <span>Restaurant</span>
+            <span>{{ commandeSelectionnee.restaurant_nom }}</span>
+          </div>
+          <div class="ds-row">
+            <span>Adresse livraison</span>
+            <span>{{ commandeSelectionnee.adresse_livraison }}</span>
+          </div>
+          <div class="ds-row">
+            <span>Paiement</span>
+            <span>{{ commandeSelectionnee.mode_paiement }}</span>
+          </div>
+          <div class="ds-row">
+            <span>Statut</span>
+            <span class="status-pill" [ngClass]="getStatutClass(commandeSelectionnee.statut)">
+              {{ getStatutLabel(commandeSelectionnee.statut) }}
+            </span>
+          </div>
+          <div class="ds-row">
+            <span>Date</span>
+            <span>{{ commandeSelectionnee.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+        <!-- ARTICLES -->
+        <div class="detail-section">
+          <div class="ds-title">Articles commandés</div>
+          <div *ngIf="commandeSelectionnee.details?.length > 0">
+            <div class="di-row" *ngFor="let d of commandeSelectionnee.details">
+              <span class="di-emoji">{{ d.emoji || '🍽️' }}</span>
+              <span class="di-name">{{ d.plat_nom }}</span>
+              <span class="di-qty">×{{ d.quantite }}</span>
+              <span class="di-price">{{ formaterMontant(d.prix_unitaire * d.quantite) }}</span>
+            </div>
+          </div>
+          <div *ngIf="!commandeSelectionnee.details || commandeSelectionnee.details.length === 0"
+               style="font-size:13px;color:#6B8F77;padding:8px 0">
+            ⏳ Chargement des détails...
+          </div>
+        </div>
+
+        <!-- TOTAUX -->
+        <div class="detail-section">
+          <div class="ds-title">Totaux</div>
+          <div class="ds-row" *ngIf="commandeSelectionnee.reduction > 0">
+            <span>Réduction ({{ commandeSelectionnee.code_promo }})</span>
+            <span style="color:#E74C3C">−{{ formaterMontant(commandeSelectionnee.reduction) }}</span>
+          </div>
+          <div class="ds-row">
+            <span>Frais livraison</span>
+            <span style="color:#22A86A">
+              {{ commandeSelectionnee.frais_livraison > 0 ? formaterMontant(commandeSelectionnee.frais_livraison) : 'Gratuit' }}
+            </span>
+          </div>
+          <div class="ds-row">
+            <span>Gain livreur</span>
+            <span style="color:#22A86A">
+              {{ formaterMontant(commandeSelectionnee.frais_livraison) }}
+            </span>
+          </div>
+          <div class="ds-row total">
+            <span>Total payé</span>
+            <span>{{ formaterMontant(commandeSelectionnee.montant_total) }}</span>
+          </div>
+        </div>
+
+        <!-- CHANGER STATUT -->
+        <div class="detail-section">
+          <div class="ds-title">Changer le statut</div>
+          <div class="statut-btns">
+            <button class="sb-btn" [class.active]="commandeSelectionnee.statut === 'nouvelle'"
+                    (click)="changerStatut(commandeSelectionnee, 'nouvelle')">🆕 Nouvelle</button>
+            <button class="sb-btn" [class.active]="commandeSelectionnee.statut === 'preparation'"
+                    (click)="changerStatut(commandeSelectionnee, 'preparation')">👨‍🍳 Préparation</button>
+            <button class="sb-btn" [class.active]="commandeSelectionnee.statut === 'en_livraison'"
+                    [class.disabled]="!commandeSelectionnee.livreur_id"
+                    (click)="changerStatut(commandeSelectionnee, 'en_livraison')">🛵 Livraison</button>
+            <button class="sb-btn sb-green" [class.active]="commandeSelectionnee.statut === 'livree'"
+                    (click)="changerStatut(commandeSelectionnee, 'livree')">✅ Livrée</button>
+            <button class="sb-btn sb-red" [class.active]="commandeSelectionnee.statut === 'annulee'"
+                    (click)="changerStatut(commandeSelectionnee, 'annulee')">❌ Annuler</button>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn-del-commande" (click)="supprimerCommande(commandeSelectionnee)">
+          🗑 Supprimer
+        </button>
+        <button class="btn-fermer" (click)="fermerDetail()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+</div>

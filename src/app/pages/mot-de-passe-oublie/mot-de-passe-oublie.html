@@ -1,0 +1,171 @@
+<div class="forgot-wrap">
+  <div class="bg-circle"></div>
+  <div class="bg-circle"></div>
+
+  <div class="card-wrap">
+
+    <!-- STEPS INDICATOR -->
+    <div class="steps-indicator">
+      <div class="step-dot" [class.sd-done]="etape > 1" [class.sd-active]="etape === 1" [class.sd-pending]="etape < 1">
+        {{ etape > 1 ? '✓' : '1' }}
+      </div>
+      <div class="step-line" [class.sl-done]="etape > 1"></div>
+      <div class="step-dot" [class.sd-done]="etape > 2" [class.sd-active]="etape === 2" [class.sd-pending]="etape < 2">
+        {{ etape > 2 ? '✓' : '2' }}
+      </div>
+      <div class="step-line" [class.sl-done]="etape > 2"></div>
+      <div class="step-dot" [class.sd-done]="etape > 3" [class.sd-active]="etape === 3" [class.sd-pending]="etape < 3">
+        {{ etape > 3 ? '✓' : '3' }}
+      </div>
+    </div>
+    <div class="steps-labels">
+      <span [class.active-label]="etape === 1">Email</span>
+      <span [class.active-label]="etape === 2">Code OTP</span>
+      <span [class.active-label]="etape === 3">Nouveau MDP</span>
+    </div>
+
+    <div class="forgot-card">
+
+      <!-- LOGO -->
+      <div class="card-logo" (click)="goToAccueil()">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+
+      <!-- ERREUR -->
+      <div class="error-alert" *ngIf="erreur">⚠️ {{ erreur }}</div>
+
+      <!-- ══ ÉTAPE 1 : EMAIL ══ -->
+      <div *ngIf="etape === 1">
+        <span class="card-icon">🔑</span>
+        <div class="card-title">Mot de passe oublié ?</div>
+        <div class="card-sub">Pas de panique ! Choisissez comment réinitialiser votre mot de passe.</div>
+
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <div class="input-wrap">
+            <span class="input-icon">📧</span>
+            <input class="form-input" type="email" [(ngModel)]="email" placeholder="ibrahima@example.com">
+          </div>
+        </div>
+
+        <div class="form-label" style="margin-bottom:10px">Méthode de réinitialisation</div>
+        <div class="method-grid">
+          <div class="method-card" [class.selected]="methode === 'email'" (click)="methode='email'">
+            <div class="mc-icon">📧</div>
+            <div class="mc-name">Email</div>
+            <div class="mc-desc">Code envoyé par email</div>
+          </div>
+          <div class="method-card" [class.selected]="methode === 'sms'" (click)="methode='sms'">
+            <div class="mc-icon">📱</div>
+            <div class="mc-name">SMS</div>
+            <div class="mc-desc">Code envoyé par SMS</div>
+          </div>
+        </div>
+
+        <button class="btn-submit" (click)="envoyerCode()" [disabled]="loading">
+          <span *ngIf="!loading">Envoyer le code →</span>
+          <span *ngIf="loading">⏳ Envoi en cours...</span>
+        </button>
+        <button class="btn-back-link" (click)="goToLogin()">← Retour à la connexion</button>
+      </div>
+
+      <!-- ══ ÉTAPE 2 : OTP ══ -->
+      <div *ngIf="etape === 2">
+        <span class="card-icon">📱</span>
+        <div class="card-title">Vérifiez votre email</div>
+        <div class="card-sub">Code envoyé à <strong>{{ email }}</strong>. Valable 5 minutes.</div>
+
+        <div class="otp-inputs">
+          <input class="otp-digit" [class.filled]="digits[0]!==''" type="text" inputmode="numeric" maxlength="1" [value]="digits[0]" (input)="onDigitInput($event,0)" (keydown)="onKeyDown($event,0)" placeholder="—">
+          <input class="otp-digit" [class.filled]="digits[1]!==''" type="text" inputmode="numeric" maxlength="1" [value]="digits[1]" (input)="onDigitInput($event,1)" (keydown)="onKeyDown($event,1)" placeholder="—">
+          <input class="otp-digit" [class.filled]="digits[2]!==''" type="text" inputmode="numeric" maxlength="1" [value]="digits[2]" (input)="onDigitInput($event,2)" (keydown)="onKeyDown($event,2)" placeholder="—">
+          <input class="otp-digit" [class.filled]="digits[3]!==''" type="text" inputmode="numeric" maxlength="1" [value]="digits[3]" (input)="onDigitInput($event,3)" (keydown)="onKeyDown($event,3)" placeholder="—">
+          <input class="otp-digit" [class.filled]="digits[4]!==''" type="text" inputmode="numeric" maxlength="1" [value]="digits[4]" (input)="onDigitInput($event,4)" (keydown)="onKeyDown($event,4)" placeholder="—">
+          <input class="otp-digit" [class.filled]="digits[5]!==''" type="text" inputmode="numeric" maxlength="1" [value]="digits[5]" (input)="onDigitInput($event,5)" (keydown)="onKeyDown($event,5)" placeholder="—">
+        </div>
+
+        <div class="timer-row">
+          <span *ngIf="!peutRenvoyer">
+            Renvoyer dans <span class="timer-val">{{ timerAffiche }}</span>
+          </span>
+          <button class="resend-btn" [class.active]="peutRenvoyer" (click)="renvoyer()">
+            Renvoyer le code
+          </button>
+        </div>
+
+        <button class="btn-submit" (click)="verifierCode()" [disabled]="loading">
+          <span *ngIf="!loading">Vérifier le code →</span>
+          <span *ngIf="loading">⏳ Vérification...</span>
+        </button>
+        <button class="btn-back-link" (click)="etape=1; erreur=''">← Modifier l'email</button>
+      </div>
+
+      <!-- ══ ÉTAPE 3 : NOUVEAU MDP ══ -->
+      <div *ngIf="etape === 3">
+        <span class="card-icon">🔐</span>
+        <div class="card-title">Nouveau mot de passe</div>
+        <div class="card-sub">Choisissez un mot de passe fort que vous n'utilisez nulle part ailleurs.</div>
+
+        <div class="form-group">
+          <label class="form-label">Nouveau mot de passe</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input class="form-input"
+                   [type]="showPassword ? 'text' : 'password'"
+                   [(ngModel)]="nouveau_mot_de_passe"
+                   placeholder="Minimum 8 caractères">
+            <button class="eye-btn" (click)="togglePassword()">{{ showPassword ? '🙈' : '👁' }}</button>
+          </div>
+          <div class="strength-bar" *ngIf="nouveau_mot_de_passe.length > 0">
+            <div class="sb-seg" [style.background]="forceMotDePasse >= 1 ? forceCouleur : ''"></div>
+            <div class="sb-seg" [style.background]="forceMotDePasse >= 2 ? forceCouleur : ''"></div>
+            <div class="sb-seg" [style.background]="forceMotDePasse >= 3 ? forceCouleur : ''"></div>
+            <div class="sb-seg" [style.background]="forceMotDePasse >= 4 ? forceCouleur : ''"></div>
+            <div class="sb-seg" [style.background]="forceMotDePasse >= 5 ? forceCouleur : ''"></div>
+          </div>
+          <div class="strength-text" *ngIf="nouveau_mot_de_passe.length > 0" [style.color]="forceCouleur">
+            Force : {{ forceLabel }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Confirmer le mot de passe</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input class="form-input"
+                   [type]="showConfirm ? 'text' : 'password'"
+                   [(ngModel)]="confirmer_mot_de_passe"
+                   placeholder="Répétez le mot de passe">
+            <button class="eye-btn" (click)="toggleConfirm()">{{ showConfirm ? '🙈' : '👁' }}</button>
+          </div>
+          <div class="match-ok" *ngIf="confirmer_mot_de_passe.length > 0 && nouveau_mot_de_passe === confirmer_mot_de_passe">
+            ✅ Les mots de passe correspondent
+          </div>
+          <div class="match-error" *ngIf="confirmer_mot_de_passe.length > 0 && nouveau_mot_de_passe !== confirmer_mot_de_passe">
+            ❌ Les mots de passe ne correspondent pas
+          </div>
+        </div>
+
+        <button class="btn-submit" (click)="reinitialiser()" [disabled]="loading">
+          <span *ngIf="!loading">Réinitialiser le mot de passe →</span>
+          <span *ngIf="loading">⏳ Mise à jour...</span>
+        </button>
+        <button class="btn-back-link" (click)="etape=2; erreur=''">← Retour</button>
+      </div>
+
+      <!-- ══ ÉTAPE 4 : SUCCÈS ══ -->
+      <div *ngIf="etape === 4" class="success-panel">
+        <span class="success-icon">🎉</span>
+        <div class="success-title">Mot de passe mis à jour !</div>
+        <div class="success-sub">
+          Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.
+        </div>
+        <button class="btn-login-now" (click)="goToLogin()">
+          🔐 Se connecter maintenant
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

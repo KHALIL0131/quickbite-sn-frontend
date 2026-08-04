@@ -1,0 +1,317 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item" (click)="naviguer('commandes')"><span class="nav-icon">📋</span>Commandes</a>
+      <a class="nav-item" (click)="naviguer('menu')"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item" (click)="naviguer('notifications')"><span class="nav-icon">🔔</span>Notifications</a>
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" (click)="naviguer('utilisateurs')"><span class="nav-icon">👥</span>Utilisateurs</a>
+      <a class="nav-item active"><span class="nav-icon">🛵</span>Livreurs</a>
+      <a class="nav-item" (click)="naviguer('finances')"><span class="nav-icon">💰</span>Finances</a>
+      <a class="nav-item" (click)="naviguer('zones')"><span class="nav-icon">📍</span>Zones livraison</a>
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item" (click)="naviguer('statistiques')"><span class="nav-icon">📈</span>Statistiques</a>
+      <a class="nav-item" (click)="naviguer('avis')"><span class="nav-icon">⭐</span>Avis clients</a>
+      <a class="nav-item" (click)="naviguer('rapports')"><span class="nav-icon">📄</span>Rapports PDF</a>
+      <div class="nav-section">Système</div>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span>Paramètres</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>Déconnexion</a>
+    </div>
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Livreurs 🛵</div>
+        <div class="ph-sub">
+          {{ stats.total }} livreur(s) · {{ stats.enLigne }} disponible(s) · {{ stats.enLivraison }} en livraison
+        </div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-sm" (click)="chargerLivreurs()">🔄 Actualiser</button>
+        <button class="btn-primary" (click)="showModalRecruiter = true">+ Recruter un livreur</button>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="alert-success" *ngIf="succes">{{ succes }}</div>
+    <div class="alert-error" *ngIf="erreur">⚠️ {{ erreur }}</div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="sc-val" style="color:#FFFFFF">{{ stats.total }}</div>
+        <div class="sc-lbl">Livreurs total</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-val" style="color:#22A86A">{{ stats.enLigne }}</div>
+        <div class="sc-lbl">Disponibles</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-val" style="color:#F5A623">{{ stats.enLivraison }}</div>
+        <div class="sc-lbl">En livraison</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-val" style="color:#FFD700">{{ stats.noteMoyenne || '—' }}</div>
+        <div class="sc-lbl">Note moyenne</div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="search"
+               name="recherche-livreur-qb"
+               autocomplete="off"
+               autocorrect="off"
+               spellcheck="false"
+               placeholder="Rechercher par nom, prénom, email ou téléphone..."
+               [(ngModel)]="searchQuery"
+               (input)="filtrer()">
+        <button class="clear-btn" *ngIf="searchQuery" (click)="viderRecherche()">✕</button>
+      </div>
+      <select class="filter-sel" [(ngModel)]="filtreStatut" (change)="filtrer()">
+        <option value="">Tous les statuts</option>
+        <option value="disponible">Disponible</option>
+        <option value="en_livraison">En livraison</option>
+        <option value="hors_ligne">Hors ligne</option>
+        <option value="suspendu">Suspendu</option>
+      </select>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des livreurs...</span>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="empty-state" *ngIf="!loading && livreursFiltres.length === 0">
+      <div style="font-size:48px;margin-bottom:12px">🛵</div>
+      <div style="font-size:16px;font-weight:700;color:#FFFFFF;margin-bottom:6px">
+        {{ livreurs.length === 0 ? 'Aucun livreur' : 'Aucun résultat' }}
+      </div>
+      <div style="font-size:13px;color:#6B8F77;margin-bottom:20px">
+        {{ livreurs.length === 0 ? 'Recrutez des livreurs pour commencer' : 'Essayez une autre recherche' }}
+      </div>
+      <button class="btn-primary" *ngIf="livreurs.length === 0" (click)="showModalRecruiter = true">
+        + Recruter un livreur
+      </button>
+      <button class="btn-sm" *ngIf="livreurs.length > 0" (click)="viderRecherche()">
+        ✕ Effacer la recherche
+      </button>
+    </div>
+
+    <!-- LIVREURS GRID -->
+    <div class="livreurs-grid" *ngIf="!loading && livreursFiltres.length > 0">
+      <div class="livreur-card"
+           *ngFor="let l of livreursFiltres; let i = index"
+           [class.offline]="l.statut === 'hors_ligne'"
+           [class.suspended]="l.statut === 'suspendu'">
+
+        <div class="lc-header">
+          <div class="lc-avatar" [style.background]="getAvatarGradient(l.statut, i)">
+            {{ getInitiales(l) }}
+            <div class="lc-status-dot" [ngClass]="getStatutClass(l.statut)"></div>
+          </div>
+          <div class="lc-info">
+            <div class="lc-name">{{ l.prenom }} {{ l.nom }}</div>
+            <div class="lc-email">{{ l.email }}</div>
+            <div class="lc-phone">{{ l.telephone || 'Téléphone non renseigné' }}</div>
+            <div class="lc-status-text" [ngClass]="getStatutTextClass(l.statut)">
+              {{ getStatutLabel(l.statut) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="lc-stats">
+          <div class="ls-stat">
+            <div class="ls-val" style="color:#F5A623">{{ l.livraisons }}</div>
+            <div class="ls-lbl">Livraisons</div>
+          </div>
+          <div class="ls-stat">
+            <div class="ls-val" style="color:#22A86A">{{ formaterMontant(l.gains) }}</div>
+            <div class="ls-lbl">Gains</div>
+          </div>
+          <div class="ls-stat">
+            <div class="ls-val" style="color:#FFD700">{{ l.note }}</div>
+            <div class="ls-lbl">Note</div>
+          </div>
+        </div>
+
+        <div class="lc-footer">
+          <button class="la-btn view" (click)="voirProfil(l)">👁 Profil</button>
+          <button class="la-btn suspend"
+                  [class.reactivate]="l.est_actif == 0"
+                  (click)="toggleSuspension(l, $event)">
+            {{ l.est_actif == 1 ? '🚫 Suspendre' : '✅ Réactiver' }}
+          </button>
+          <button class="la-btn delete" (click)="supprimerLivreur(l, $event)">🗑</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+  <!-- MODAL PROFIL -->
+  <div class="modal-overlay" [class.show]="showProfil"
+       (click)="$event.target === $event.currentTarget && fermerProfil()">
+    <div class="modal-profil" *ngIf="livreurSelectionne">
+      <div class="modal-header">
+        <div class="modal-title">🛵 Profil livreur</div>
+        <button class="modal-close" (click)="fermerProfil()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="profil-avatar-row">
+          <div class="profil-avatar" [style.background]="getAvatarGradient(livreurSelectionne.statut, 0)">
+            {{ getInitiales(livreurSelectionne) }}
+          </div>
+          <div>
+            <div class="profil-name">{{ livreurSelectionne.prenom }} {{ livreurSelectionne.nom }}</div>
+            <div class="profil-statut" [ngClass]="getStatutTextClass(livreurSelectionne.statut)">
+              {{ getStatutLabel(livreurSelectionne.statut) }}
+            </div>
+          </div>
+        </div>
+        <div class="profil-stats">
+          <div class="ps-card">
+            <div class="ps-val" style="color:#F5A623">{{ livreurSelectionne.livraisons }}</div>
+            <div class="ps-lbl">Livraisons</div>
+          </div>
+          <div class="ps-card">
+            <div class="ps-val" style="color:#22A86A">{{ formaterMontant(livreurSelectionne.gains) }}</div>
+            <div class="ps-lbl">Gains</div>
+          </div>
+          <div class="ps-card">
+            <div class="ps-val" style="color:#FFD700">{{ livreurSelectionne.note }}</div>
+            <div class="ps-lbl">Note</div>
+          </div>
+        </div>
+        <div class="profil-infos">
+          <div class="profil-row">
+            <span class="profil-lbl">📧 Email</span>
+            <span class="profil-val">{{ livreurSelectionne.email }}</span>
+          </div>
+          <div class="profil-row">
+            <span class="profil-lbl">📞 Téléphone</span>
+            <span class="profil-val">{{ livreurSelectionne.telephone || '—' }}</span>
+          </div>
+          <div class="profil-row">
+            <span class="profil-lbl">🛵 En cours</span>
+            <span class="profil-val">{{ livreurSelectionne.enCours }} livraison(s)</span>
+          </div>
+          <div class="profil-row">
+            <span class="profil-lbl">✅ Compte</span>
+            <span class="profil-val">{{ livreurSelectionne.est_actif == 1 ? 'Actif' : 'Suspendu' }}</span>
+          </div>
+          <div class="profil-row">
+            <span class="profil-lbl">📅 Inscription</span>
+            <span class="profil-val">{{ livreurSelectionne.created_at | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="fermerProfil()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL RECRUTER -->
+  <div class="modal-overlay" [class.show]="showModalRecruiter"
+       (click)="$event.target === $event.currentTarget && (showModalRecruiter = false)">
+    <div class="modal-recruiter">
+      <div class="modal-header">
+        <div class="modal-title">🛵 Recruter un livreur</div>
+        <button class="modal-close" (click)="showModalRecruiter = false; erreurRecruiter = ''">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="error-alert" *ngIf="erreurRecruiter">⚠️ {{ erreurRecruiter }}</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Prénom *</label>
+            <input class="form-input" type="text" autocomplete="off"
+                   [(ngModel)]="nouveauLivreur.prenom" placeholder="Ibrahima">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nom *</label>
+            <input class="form-input" type="text" autocomplete="off"
+                   [(ngModel)]="nouveauLivreur.nom" placeholder="Faye">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input class="form-input" type="email" autocomplete="off"
+                 [(ngModel)]="nouveauLivreur.email" placeholder="livreur@example.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Téléphone *</label>
+          <input class="form-input" type="tel" autocomplete="off"
+                 [(ngModel)]="nouveauLivreur.telephone" placeholder="77 123 45 67">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mot de passe *</label>
+          <input class="form-input" type="password" autocomplete="new-password"
+                 [(ngModel)]="nouveauLivreur.mot_de_passe" placeholder="Minimum 8 caractères">
+        </div>
+
+        <div class="info-box">
+          💡 Le livreur recevra ses identifiants par email et pourra se connecter via la page Login.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="showModalRecruiter = false; erreurRecruiter = ''">Annuler</button>
+        <button class="btn-save" (click)="recruterLivreur()" [disabled]="loadingRecruiter">
+          <span *ngIf="!loadingRecruiter">🛵 Recruter ce livreur</span>
+          <span *ngIf="loadingRecruiter">⏳ Enregistrement...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,6 @@
+export const environment = {
+  production: false,
+  serverUrl: 'http://localhost:3000',
+  apiUrl: 'http://localhost:3000/api',
+  socketUrl: 'http://localhost:3000'
+};

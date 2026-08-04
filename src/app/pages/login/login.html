@@ -1,0 +1,170 @@
+<div class="login-wrap">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="left-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+
+    <div class="left-hero">
+      <span class="left-big-emoji">🍕</span>
+      <div class="left-title">
+        Bon retour<br>parmi <em>nous !</em>
+      </div>
+      <p class="left-subtitle">
+        Connectez-vous pour accéder à vos commandes, vos restaurants favoris et vos offres exclusives.
+      </p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon fi-green">🛵</div>
+          <div class="feature-text">
+            <div class="ft-title">Suivi en temps réel</div>
+            <div class="ft-sub">Suivez votre livreur sur la carte</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon fi-orange">💳</div>
+          <div class="feature-text">
+            <div class="ft-title">Paiement sécurisé</div>
+            <div class="ft-sub">Wave, Orange Money, carte bancaire</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon fi-yellow">⭐</div>
+          <div class="feature-text">
+            <div class="ft-title">Offres exclusives</div>
+            <div class="ft-sub">Réductions réservées aux membres</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon fi-blue">📊</div>
+          <div class="feature-text">
+            <div class="ft-title">Historique complet</div>
+            <div class="ft-sub">Retrouvez toutes vos commandes passées</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-stats">
+      <div>
+        <div class="lst-num green">120+</div>
+        <div class="lst-lbl">Restaurants</div>
+      </div>
+      <div>
+        <div class="lst-num orange">8 500</div>
+        <div class="lst-lbl">Clients actifs</div>
+      </div>
+      <div>
+        <div class="lst-num yellow">30 min</div>
+        <div class="lst-lbl">Délai moyen</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="tab-switcher">
+      <button class="tab-btn active" type="button">Se connecter</button>
+      <button class="tab-btn" type="button" (click)="goToRegister()">S'inscrire</button>
+    </div>
+
+    <div class="form-title">Connexion 👋</div>
+    <div class="form-sub">Entrez vos identifiants pour continuer</div>
+
+    <!-- ERREUR SERVEUR -->
+    <div class="error-alert" *ngIf="erreur">
+      ⚠️ {{ erreur }}
+    </div>
+
+    <!-- ══ FORMULAIRE RÉACTIF ══ -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- IDENTIFIANT -->
+      <div class="form-group">
+        <label class="form-label" for="identifiant">Email ou téléphone</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input id="identifiant"
+                 class="form-input"
+                 type="text"
+                 formControlName="identifiant"
+                 autocomplete="username"
+                 placeholder="ibrahima@example.com ou 77 123 45 67"
+                 [class.error]="identifiantInvalide"
+                 [class.valide]="identifiant?.valid && identifiant?.touched">
+          <span class="check-icon" *ngIf="identifiant?.valid && identifiant?.touched">✓</span>
+        </div>
+        <div class="field-error" *ngIf="identifiantInvalide">
+          {{ messageIdentifiant }}
+        </div>
+      </div>
+
+      <!-- MOT DE PASSE -->
+      <div class="form-group">
+        <label class="form-label" for="motdepasse">Mot de passe</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input id="motdepasse"
+                 class="form-input"
+                 [type]="showPassword ? 'text' : 'password'"
+                 formControlName="mot_de_passe"
+                 autocomplete="current-password"
+                 placeholder="••••••••"
+                 [class.error]="motDePasseInvalide"
+                 [class.valide]="motDePasse?.valid && motDePasse?.touched">
+          <button class="eye-btn" type="button" (click)="togglePassword()">
+            {{ showPassword ? '🙈' : '👁' }}
+          </button>
+        </div>
+        <div class="field-error" *ngIf="motDePasseInvalide">
+          {{ messageMotDePasse }}
+        </div>
+      </div>
+
+      <!-- REMEMBER + FORGOT -->
+      <div class="form-row-inline">
+        <label class="remember-row">
+          <input type="checkbox" formControlName="rememberMe">
+          <span>Se souvenir de moi</span>
+        </label>
+        <a class="forgot-link" (click)="goToForgot()">Mot de passe oublié ?</a>
+      </div>
+
+      <!-- SUBMIT -->
+      <button class="btn-submit"
+              type="submit"
+              [disabled]="loading || loginForm.invalid">
+        <span *ngIf="!loading">Se connecter →</span>
+        <span *ngIf="loading">⏳ Connexion en cours...</span>
+      </button>
+
+    </form>
+
+    <div class="divider"><span>ou continuer avec</span></div>
+
+    <button class="btn-google" type="button">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continuer avec Google
+    </button>
+
+    <div class="register-link">
+      Pas encore de compte ?
+      <a (click)="goToRegister()">Créer un compte gratuitement</a>
+    </div>
+
+    <div class="security-badge">
+      <div class="sec-dot"></div>
+      <span>Connexion sécurisée SSL · JWT · Données protégées</span>
+    </div>
+
+  </div>
+</div>

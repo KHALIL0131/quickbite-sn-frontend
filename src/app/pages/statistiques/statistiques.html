@@ -1,0 +1,230 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item" (click)="naviguer('commandes')"><span class="nav-icon">📋</span>Commandes</a>
+      <a class="nav-item" (click)="naviguer('menu')"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item" (click)="naviguer('notifications')"><span class="nav-icon">🔔</span>Notifications</a>
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" (click)="naviguer('utilisateurs')"><span class="nav-icon">👥</span>Utilisateurs</a>
+      <a class="nav-item" (click)="naviguer('livreurs')"><span class="nav-icon">🛵</span>Livreurs</a>
+      <a class="nav-item" (click)="naviguer('finances')"><span class="nav-icon">💰</span>Finances</a>
+      <a class="nav-item" (click)="naviguer('zones')"><span class="nav-icon">📍</span>Zones livraison</a>
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item active"><span class="nav-icon">📈</span>Statistiques</a>
+      <a class="nav-item" (click)="naviguer('avis')"><span class="nav-icon">⭐</span>Avis clients</a>
+      <a class="nav-item" (click)="naviguer('rapports')"><span class="nav-icon">📄</span>Rapports PDF</a>
+      <div class="nav-section">Système</div>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span>Paramètres</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>Déconnexion</a>
+    </div>
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Statistiques 📈</div>
+        <div class="ph-sub">Analyse des performances · {{ admin?.prenom }} {{ admin?.nom }}</div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-sm" (click)="exporterPDF()">📄 Exporter PDF</button>
+        <button class="btn-sm" (click)="exporterExcel()">📊 Exporter Excel</button>
+      </div>
+    </div>
+
+    <!-- PÉRIODE TABS -->
+    <div class="period-tabs">
+      <div class="ptab" [class.active]="periodeActive === 'aujourd'" (click)="changerPeriode('aujourd')">
+        Aujourd'hui
+      </div>
+      <div class="ptab" [class.active]="periodeActive === '7j'" (click)="changerPeriode('7j')">
+        7 jours
+      </div>
+      <div class="ptab" [class.active]="periodeActive === '30j'" (click)="changerPeriode('30j')">
+        30 jours
+      </div>
+      <div class="ptab" [class.active]="periodeActive === '3m'" (click)="changerPeriode('3m')">
+        3 mois
+      </div>
+      <div class="ptab" [class.active]="periodeActive === '1an'" (click)="changerPeriode('1an')">
+        1 an
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-large">
+      <div class="kl-card">
+        <div class="kl-icon">💰</div>
+        <div class="kl-val" style="color:#FFD700">{{ formaterMontant(kpis.revenus) }}</div>
+        <div class="kl-lbl">Revenus du mois</div>
+        <div class="kl-bar">
+          <div class="kl-fill" style="width:78%;background:linear-gradient(90deg,#FFD700,#F5A623)"></div>
+        </div>
+        <div class="kl-delta up">↑ Commandes livrées</div>
+      </div>
+      <div class="kl-card">
+        <div class="kl-icon">📦</div>
+        <div class="kl-val" style="color:#F5A623">{{ kpis.commandes }}</div>
+        <div class="kl-lbl">Commandes ce mois</div>
+        <div class="kl-bar">
+          <div class="kl-fill" style="width:65%;background:linear-gradient(90deg,#F5A623,#FFD700)"></div>
+        </div>
+        <div class="kl-delta up">↑ Total commandes</div>
+      </div>
+      <div class="kl-card">
+        <div class="kl-icon">👥</div>
+        <div class="kl-val" style="color:#22A86A">{{ kpis.clients }}</div>
+        <div class="kl-lbl">Clients actifs</div>
+        <div class="kl-bar">
+          <div class="kl-fill" style="width:54%;background:linear-gradient(90deg,#22A86A,#FFD700)"></div>
+        </div>
+        <div class="kl-delta up">↑ Comptes clients</div>
+      </div>
+      <div class="kl-card">
+        <div class="kl-icon">⏱</div>
+        <div class="kl-val" style="color:#2563EB">{{ kpis.delai }} min</div>
+        <div class="kl-lbl">Délai moyen livraison</div>
+        <div class="kl-bar">
+          <div class="kl-fill" style="width:80%;background:linear-gradient(90deg,#2563EB,#22A86A)"></div>
+        </div>
+        <div class="kl-delta up">↓ Délai estimé</div>
+      </div>
+    </div>
+
+    <!-- CHARTS REVENUS + PAIEMENTS -->
+    <div class="charts-3">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="ch-title">Évolution des revenus</div>
+            <div class="ch-sub">Période {{ periodeActive }} · par jour</div>
+          </div>
+          <div class="ch-val" style="color:#FFD700">{{ formaterMontant(kpis.revenus) }}</div>
+        </div>
+        <canvas id="revenueChart" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="ch-title">Modes de paiement</div>
+        </div>
+        <canvas id="payChart" height="160"></canvas>
+      </div>
+    </div>
+
+    <!-- CHARTS COMMANDES + CLIENTS -->
+    <div class="charts-2">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="ch-title">Commandes par heure</div>
+            <div class="ch-sub">Heures de pointe · Aujourd'hui</div>
+          </div>
+        </div>
+        <canvas id="hourChart" height="130"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="ch-title">Nouveaux clients</div>
+            <div class="ch-sub">Croissance mensuelle</div>
+          </div>
+        </div>
+        <canvas id="clientChart" height="130"></canvas>
+      </div>
+    </div>
+
+    <!-- TOP PLATS -->
+    <div class="chart-card table-card">
+      <div class="chart-header">
+        <div>
+          <div class="ch-title">🏆 Performance par plat</div>
+          <div class="ch-sub">Top 5 ce mois</div>
+        </div>
+        <button class="btn-sm" (click)="exporterExcel()">📊 Exporter</button>
+      </div>
+
+      <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Chargement...</span>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading && topPlats.length === 0">
+        <div style="font-size:48px;margin-bottom:12px">📊</div>
+        <div style="font-size:15px;font-weight:700;color:#FFFFFF;margin-bottom:6px">Aucune donnée</div>
+        <div style="font-size:13px;color:#6B8F77">Ajoutez des plats et passez des commandes</div>
+      </div>
+
+      <div class="table-scroll" *ngIf="!loading && topPlats.length > 0">
+        <table class="top-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Plat</th>
+              <th>Commandes</th>
+              <th>Revenus</th>
+              <th>Note</th>
+              <th>Part du menu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of topPlats">
+              <td><span class="rank" [ngClass]="getRangClass(p.rang)">{{ p.rang }}</span></td>
+              <td>{{ p.emoji || '🍽️' }} {{ p.nom }}</td>
+              <td>{{ p.commandes }}</td>
+              <td class="td-yellow">{{ formaterMontant(p.revenus) }}</td>
+              <td class="td-yellow">⭐ {{ p.note }}</td>
+              <td>
+                <div class="prog-bar">
+                  <div class="prog-fill" [style.width]="p.part + '%'"></div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

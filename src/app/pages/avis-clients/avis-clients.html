@@ -1,0 +1,249 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item" (click)="naviguer('commandes')"><span class="nav-icon">📋</span>Commandes</a>
+      <a class="nav-item" (click)="naviguer('menu')"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item" (click)="naviguer('notifications')"><span class="nav-icon">🔔</span>Notifications</a>
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" (click)="naviguer('utilisateurs')"><span class="nav-icon">👥</span>Utilisateurs</a>
+      <a class="nav-item" (click)="naviguer('livreurs')"><span class="nav-icon">🛵</span>Livreurs</a>
+      <a class="nav-item" (click)="naviguer('finances')"><span class="nav-icon">💰</span>Finances</a>
+      <a class="nav-item" (click)="naviguer('zones')"><span class="nav-icon">📍</span>Zones livraison</a>
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item" (click)="naviguer('statistiques')"><span class="nav-icon">📈</span>Statistiques</a>
+      <a class="nav-item active"><span class="nav-icon">⭐</span>Avis clients</a>
+      <a class="nav-item" (click)="naviguer('rapports')"><span class="nav-icon">📄</span>Rapports PDF</a>
+      <div class="nav-section">Système</div>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span>Paramètres</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>Déconnexion</a>
+    </div>
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Avis clients ⭐</div>
+        <div class="ph-sub">
+          {{ totalAvis }} avis · Note globale {{ noteMoyenne }} · Répondez à vos clients
+        </div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-sm" (click)="exporterExcel()">Export Excel</button>
+        <button class="btn-sm" (click)="exporter()">📄 Exporter CSV</button>
+        <button class="btn-danger" (click)="toutSupprimer()" *ngIf="avisFiltres.length > 0">
+          🗑 Tout supprimer
+        </button>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="overview-grid">
+
+      <!-- NOTE GLOBALE -->
+      <div class="rating-big">
+        <div class="rb-score">{{ noteMoyenne || '—' }}</div>
+        <div class="rb-stars">
+          <span *ngFor="let s of [1,2,3,4,5]">
+            {{ s <= noteMoyenne ? '⭐' : '☆' }}
+          </span>
+        </div>
+        <div class="rb-count">Basé sur {{ totalAvis }} avis</div>
+        <div class="rb-badge" *ngIf="noteMoyenne >= 4.5">🏆 Excellent</div>
+        <div class="rb-badge rb-badge-ok" *ngIf="noteMoyenne >= 3.5 && noteMoyenne < 4.5">👍 Bien</div>
+        <div class="rb-badge rb-badge-warn" *ngIf="noteMoyenne < 3.5 && noteMoyenne > 0">⚠️ À améliorer</div>
+        <div class="rb-badge" *ngIf="noteMoyenne === 0">Aucun avis</div>
+      </div>
+
+      <!-- RÉPARTITION -->
+      <div class="rating-bars">
+        <div class="rb-title">Répartition des notes</div>
+        <div class="rb-row">
+          <span class="rb-label">⭐⭐⭐⭐⭐</span>
+          <div class="rb-bar"><div class="rb-fill" [style.width]="repartition[4] + '%'"></div></div>
+          <span class="rb-pct">{{ repartition[4] }}%</span>
+        </div>
+        <div class="rb-row">
+          <span class="rb-label">⭐⭐⭐⭐</span>
+          <div class="rb-bar">
+            <div class="rb-fill" [style.width]="repartition[3] + '%'"
+                 style="background:linear-gradient(90deg,#F5A623,#FFD700)"></div>
+          </div>
+          <span class="rb-pct">{{ repartition[3] }}%</span>
+        </div>
+        <div class="rb-row">
+          <span class="rb-label">⭐⭐⭐</span>
+          <div class="rb-bar">
+            <div class="rb-fill" [style.width]="repartition[2] + '%'"
+                 style="background:#F5A623"></div>
+          </div>
+          <span class="rb-pct">{{ repartition[2] }}%</span>
+        </div>
+        <div class="rb-row">
+          <span class="rb-label">⭐⭐</span>
+          <div class="rb-bar">
+            <div class="rb-fill" [style.width]="repartition[1] + '%'"
+                 style="background:#E08B10"></div>
+          </div>
+          <span class="rb-pct">{{ repartition[1] }}%</span>
+        </div>
+        <div class="rb-row">
+          <span class="rb-label">⭐</span>
+          <div class="rb-bar">
+            <div class="rb-fill" [style.width]="repartition[0] + '%'"
+                 style="background:#E74C3C"></div>
+          </div>
+          <span class="rb-pct">{{ repartition[0] }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTRES -->
+    <div class="filters-row">
+      <button class="filter-btn" [class.active]="filtreNote === 0 && !filtreSansReponse"
+              (click)="filtreNote = 0; filtreSansReponse = false; filtrer()">
+        Tous ({{ totalAvis }})
+      </button>
+      <button class="filter-btn" [class.active]="filtreNote === 5"
+              (click)="setFiltreNote(5)">⭐⭐⭐⭐⭐</button>
+      <button class="filter-btn" [class.active]="filtreNote === 4"
+              (click)="setFiltreNote(4)">⭐⭐⭐⭐</button>
+      <button class="filter-btn" [class.active]="filtreNote === 3"
+              (click)="setFiltreNote(3)">⭐⭐⭐</button>
+      <button class="filter-btn" [class.active]="filtreNote === 2"
+              (click)="setFiltreNote(2)">⭐⭐</button>
+      <button class="filter-btn" [class.active]="filtreNote === 1"
+              (click)="setFiltreNote(1)">⭐</button>
+      <div class="filter-sep"></div>
+      <button class="filter-btn" [class.active]="filtreSansReponse"
+              (click)="toggleSansReponse()">Sans réponse</button>
+      <input class="search-input" type="text"
+             placeholder="🔍 Rechercher dans les avis..."
+             [(ngModel)]="searchQuery"
+             (input)="filtrer()">
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des avis...</span>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="empty-state" *ngIf="!loading && avisFiltres.length === 0">
+      <div style="font-size:48px;margin-bottom:12px">⭐</div>
+      <div style="font-size:16px;font-weight:700;color:#FFFFFF;margin-bottom:6px">Aucun avis</div>
+      <div style="font-size:13px;color:#6B8F77">Les avis apparaîtront ici après les commandes livrées</div>
+    </div>
+
+    <!-- LISTE AVIS -->
+    <div class="reviews-list" *ngIf="!loading && avisFiltres.length > 0">
+
+      <div class="review-card"
+           *ngFor="let a of avisFiltres; let i = index"
+           [class.negative]="a.negatif">
+
+        <div class="rc-header">
+          <div class="rc-avatar" [style.background]="getAvatarGradient(i)">
+            {{ a.initiales }}
+          </div>
+          <div class="rc-meta">
+            <div class="rc-name">{{ a.client_nom }}</div>
+            <div class="rc-date">{{ a.date | date:'dd/MM/yyyy · HH:mm' }}</div>
+            <div class="rc-plat">🍽️ {{ a.plat }}</div>
+          </div>
+          <div class="rc-stars" [class.bad]="a.note <= 2">
+            {{ getEtoiles(a.note) }}
+          </div>
+          <span class="rc-verified" *ngIf="a.verifie">✅ Achat vérifié</span>
+        </div>
+
+        <div class="rc-text">{{ a.commentaire }}</div>
+
+        <div class="rc-tags">
+          <span *ngFor="let tag of a.tags"
+                class="rc-tag"
+                [class.pos]="tag.startsWith('✅')"
+                [class.neg]="tag.startsWith('⚠️')">
+            {{ tag }}
+          </span>
+        </div>
+
+        <div class="rc-actions">
+          <button class="rc-btn reply"
+                  [class.urgent]="a.note <= 2"
+                  (click)="toggleReponse(a)">
+            {{ a.note <= 2 ? '⚠️ Répondre (urgent)' : '💬 Répondre' }}
+          </button>
+          <button class="rc-btn" (click)="supprimerAvis(a)">🗑 Supprimer</button>
+        </div>
+
+        <!-- RÉPONSE ADMIN EXISTANTE -->
+        <div class="admin-reply" *ngIf="a.reponse">
+          <div class="ar-header">
+            <div class="ar-icon">🍔</div>
+            <div class="ar-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+            <div class="ar-date">{{ a.reponse.date }}</div>
+          </div>
+          <div class="ar-text">{{ a.reponse.texte }}</div>
+        </div>
+
+        <!-- FORMULAIRE RÉPONSE -->
+        <div class="reply-form" [class.show]="a.reponse_ouverte">
+          <textarea class="reply-textarea"
+                    placeholder="Répondez à cet avis en tant que QuickBite SN..."
+                    [(ngModel)]="a.texte_reponse"
+                    rows="3"></textarea>
+          <div class="reply-actions">
+            <button class="btn-cancel-r" (click)="toggleReponse(a)">Annuler</button>
+            <button class="btn-send-r" (click)="publierReponse(a)">📤 Publier la réponse</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

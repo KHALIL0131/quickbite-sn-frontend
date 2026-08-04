@@ -1,0 +1,174 @@
+<div class="admin-login-wrap">
+  <div class="bg-circle"></div>
+  <div class="bg-circle"></div>
+
+  <div class="admin-card">
+
+    <!-- LOGO -->
+    <div class="card-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+
+    <!-- ICÔNE ADMIN -->
+    <div class="admin-icon-ring">
+      <div class="admin-emoji">🛡️</div>
+    </div>
+
+    <div class="card-title">Espace Administrateur</div>
+    <div class="card-sub">Accès réservé aux administrateurs QuickBite SN</div>
+
+    <!-- BADGE SÉCURITÉ -->
+    <div class="security-banner">
+      <div class="sec-dot"></div>
+      <span>Zone sécurisée · Accès restreint · JWT protégé</span>
+    </div>
+
+    <!-- ONGLETS -->
+    <div class="tab-switcher">
+      <button class="tab-btn" [class.active]="onglet === 'connexion'" (click)="changerOnglet('connexion')">
+        🔐 Se connecter
+      </button>
+      <button class="tab-btn" [class.active]="onglet === 'inscription'" (click)="changerOnglet('inscription')">
+        ➕ S'inscrire
+      </button>
+    </div>
+
+    <!-- ══ CONNEXION ══ -->
+    <div *ngIf="onglet === 'connexion'">
+
+      <div class="error-alert" *ngIf="erreur">{{ erreur }}</div>
+
+      <div class="form-group">
+        <label class="form-label">Email administrateur</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input class="form-input" type="email" [(ngModel)]="email" placeholder="admin@quickbite.sn">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-input"
+                 [type]="showPassword ? 'text' : 'password'"
+                 [(ngModel)]="mot_de_passe"
+                 placeholder="••••••••">
+          <button class="eye-btn" (click)="togglePassword()">
+            {{ showPassword ? '🙈' : '👁' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="forgot-row">
+        <a class="forgot-link" (click)="goToForgot()">Mot de passe oublié ?</a>
+      </div>
+
+      <button class="btn-admin-login" (click)="onSubmit()" [disabled]="loading">
+        <span *ngIf="!loading">🛡️ Accéder au tableau de bord →</span>
+        <span *ngIf="loading">⏳ Vérification en cours...</span>
+      </button>
+
+    </div>
+
+    <!-- ══ INSCRIPTION ══ -->
+    <div *ngIf="onglet === 'inscription'">
+
+      <div class="error-alert" *ngIf="erreurInscription">{{ erreurInscription }}</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom *</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input class="form-input" type="text" [(ngModel)]="prenom" placeholder="Ibrahima">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom *</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input class="form-input" type="text" [(ngModel)]="nom" placeholder="Faye">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input class="form-input" type="email" [(ngModel)]="emailInscription" placeholder="admin@quickbite.sn">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Téléphone *</label>
+        <div class="phone-wrap">
+          <div class="phone-code">🇸🇳 +221 ▾</div>
+          <div class="input-wrap" style="flex:1">
+            <span class="input-icon">📞</span>
+            <input class="form-input" type="tel" [(ngModel)]="telephone" placeholder="77 123 45 67">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Mot de passe *</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-input"
+                 [type]="showPasswordInscription ? 'text' : 'password'"
+                 [(ngModel)]="mot_de_passe_inscription"
+                 placeholder="Minimum 8 caractères">
+          <button class="eye-btn" (click)="togglePasswordInscription()">
+            {{ showPasswordInscription ? '🙈' : '👁' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Confirmer mot de passe *</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-input"
+                 [type]="showPasswordInscription ? 'text' : 'password'"
+                 [(ngModel)]="confirmer_mot_de_passe"
+                 placeholder="Répétez le mot de passe">
+        </div>
+        <div class="match-ok" *ngIf="confirmer_mot_de_passe.length > 0 && mot_de_passe_inscription === confirmer_mot_de_passe">
+          ✅ Les mots de passe correspondent
+        </div>
+        <div class="match-error" *ngIf="confirmer_mot_de_passe.length > 0 && mot_de_passe_inscription !== confirmer_mot_de_passe">
+          ❌ Les mots de passe ne correspondent pas
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🔑 Code secret administrateur *</label>
+        <div class="input-wrap">
+          <span class="input-icon">🗝️</span>
+          <input class="form-input" type="password" [(ngModel)]="codeSecret" placeholder="Code fourni par l'administrateur principal">
+        </div>
+        <div class="code-hint">Ce code est fourni uniquement aux membres autorisés</div>
+      </div>
+
+      <button class="btn-admin-login" (click)="onInscription()" [disabled]="loadingInscription">
+        <span *ngIf="!loadingInscription">➕ Créer mon compte administrateur →</span>
+        <span *ngIf="loadingInscription">⏳ Création en cours...</span>
+      </button>
+
+    </div>
+
+    <!-- RETOUR -->
+    <button class="btn-back" (click)="goToAccueil()">← Retour à l'accueil</button>
+
+    <!-- SÉCURITÉ -->
+    <div class="security-row">
+      <div class="sec-item"><div class="sec-dot"></div>SSL Chiffré</div>
+      <div class="sec-item"><div class="sec-dot"></div>JWT Sécurisé</div>
+      <div class="sec-item"><div class="sec-dot"></div>Accès restreint</div>
+    </div>
+
+  </div>
+</div>

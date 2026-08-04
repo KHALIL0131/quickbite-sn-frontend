@@ -1,0 +1,252 @@
+<div class="livreur-wrap">
+
+  <!-- OVERLAY -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🛵</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">🛵 Espace Livreur</div>
+    </div>
+    <div class="sb-profil">
+      <div class="sp-avatar">{{ getInitiales() }}</div>
+      <div class="sp-info">
+        <div class="sp-name">{{ livreur?.prenom }} {{ livreur?.nom }}</div>
+        <div class="sp-statut online">● En ligne</div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Navigation</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" (click)="naviguer('livraisons')"><span class="nav-icon">🛵</span><span class="nav-label">Mes livraisons</span></a>
+      <a class="nav-item" (click)="naviguer('historique')"><span class="nav-icon">📅</span><span class="nav-label">Historique</span></a>
+      <a class="nav-item" (click)="naviguer('gains')"><span class="nav-icon">💰</span><span class="nav-label">Mes gains</span></a>
+      <a class="nav-item" (click)="naviguer('carte')"><span class="nav-icon">🗺️</span><span class="nav-label">Carte GPS</span></a>
+      <a class="nav-item" (click)="naviguer('messagerie')"><span class="nav-icon">💬</span><span class="nav-label">Messagerie</span></a>
+      <div class="nav-section">Mon véhicule</div>
+      <a class="nav-item active"><span class="nav-icon">🏍️</span><span class="nav-label">Mon moto</span></a>
+      <a class="nav-item" (click)="naviguer('carburant')"><span class="nav-icon">⛽</span><span class="nav-label">Carburant</span></a>
+      <a class="nav-item" (click)="naviguer('entretien')"><span class="nav-icon">🔧</span><span class="nav-label">Entretien</span></a>
+      <div class="nav-section">Compte</div>
+      <a class="nav-item" (click)="naviguer('profil')"><span class="nav-icon">👤</span><span class="nav-label">Mon profil</span></a>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span><span class="nav-label">Paramètres</span></a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span><span class="nav-label">Déconnexion</span></a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo"><div class="logo-icon-sm">🏍️</div><span>Mon moto</span></div>
+      <div class="nav-avatar">{{ getInitiales() }}</div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Mon véhicule 🏍️</div>
+        <div class="ph-sub">Gérez les informations de votre véhicule de livraison</div>
+      </div>
+      <button class="btn-edit" (click)="showForm = !showForm">
+        {{ showForm ? '✕ Annuler' : '✏️ ' + (vehicule ? 'Modifier' : 'Ajouter mon véhicule') }}
+      </button>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="alert-success" *ngIf="succes">{{ succes }}</div>
+    <div class="alert-error" *ngIf="erreur">⚠️ {{ erreur }}</div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des informations...</span>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- FICHE VÉHICULE -->
+      <div class="vehicule-hero" *ngIf="vehicule && !showForm">
+        <div class="vh-visual">
+          <div class="vh-photo" *ngIf="vehicule.photo">
+            <img [src]="getPhotoUrl(vehicule.photo)" alt="Photo véhicule">
+          </div>
+          <div class="vh-icon" *ngIf="!vehicule.photo">
+            {{ getTypeIcon(vehicule.type) }}
+          </div>
+          <div class="vh-badge">{{ vehicule.type }}</div>
+        </div>
+        <div class="vh-info">
+          <div class="vh-name">
+            {{ vehicule.marque }} {{ vehicule.modele }}
+          </div>
+          <div class="vh-immat" *ngIf="vehicule.immatriculation">
+            🪪 {{ vehicule.immatriculation }}
+          </div>
+          <div class="vh-details">
+            <div class="vhd-item" *ngIf="vehicule.annee">
+              <div class="vhd-icon">📅</div>
+              <div>
+                <div class="vhd-label">Année</div>
+                <div class="vhd-val">{{ vehicule.annee }}</div>
+              </div>
+            </div>
+            <div class="vhd-item" *ngIf="vehicule.couleur">
+              <div class="vhd-icon">🎨</div>
+              <div>
+                <div class="vhd-label">Couleur</div>
+                <div class="vhd-val">{{ vehicule.couleur }}</div>
+              </div>
+            </div>
+            <div class="vhd-item">
+              <div class="vhd-icon">📏</div>
+              <div>
+                <div class="vhd-label">Kilométrage</div>
+                <div class="vhd-val">{{ vehicule.kilometrage | number }} km</div>
+              </div>
+            </div>
+          </div>
+          <div class="vh-actions">
+            <button class="btn-modifier" (click)="showForm = true">✏️ Modifier</button>
+            <button class="btn-carburant" (click)="naviguer('carburant')">⛽ Carburant</button>
+            <button class="btn-entretien" (click)="naviguer('entretien')">🔧 Entretien</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPTY -->
+      <div class="empty-vehicule" *ngIf="!vehicule && !showForm">
+        <div class="ev-icon">🏍️</div>
+        <div class="ev-title">Aucun véhicule enregistré</div>
+        <div class="ev-sub">
+          Ajoutez votre véhicule pour suivre le kilométrage,
+          la consommation et les entretiens
+        </div>
+        <button class="btn-ajouter" (click)="showForm = true">
+          + Ajouter mon véhicule
+        </button>
+      </div>
+
+      <!-- FORMULAIRE -->
+      <div class="form-card" *ngIf="showForm">
+        <div class="fc-title">
+          {{ vehicule ? '✏️ Modifier mon véhicule' : '➕ Ajouter un véhicule' }}
+        </div>
+
+        <!-- PHOTO -->
+        <div class="photo-upload">
+          <div class="pu-preview" *ngIf="photoPreview || vehicule?.photo">
+            <img [src]="photoPreview || getPhotoUrl(vehicule?.photo)" alt="Photo">
+          </div>
+          <div class="pu-placeholder" *ngIf="!photoPreview && !vehicule?.photo">
+            <span>{{ getTypeIcon(form.type) }}</span>
+            <span>Ajouter une photo</span>
+          </div>
+          <input type="file" id="photoInput" accept="image/*"
+                 (change)="onPhotoChange($event)" style="display:none">
+          <button class="pu-btn" (click)="triggerPhoto()"></button>
+        </div>
+
+        <!-- TYPE -->
+        <div class="form-group">
+          <label class="form-label">Type de véhicule</label>
+          <div class="type-selector">
+            <div class="ts-item" [class.active]="form.type === 'moto'"
+                 (click)="form.type = 'moto'">🏍️ Moto</div>
+            <div class="ts-item" [class.active]="form.type === 'voiture'"
+                 (click)="form.type = 'voiture'">🚗 Voiture</div>
+            <div class="ts-item" [class.active]="form.type === 'velo'"
+                 (click)="form.type = 'velo'">🚲 Vélo</div>
+            <div class="ts-item" [class.active]="form.type === 'autre'"
+                 (click)="form.type = 'autre'">🚐 Autre</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Marque *</label>
+            <input class="form-input" type="text" [(ngModel)]="form.marque"
+                   placeholder="Ex: Yamaha, Honda...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Modèle *</label>
+            <input class="form-input" type="text" [(ngModel)]="form.modele"
+                   placeholder="Ex: YBR 125, CB 150...">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Immatriculation</label>
+            <input class="form-input" type="text" [(ngModel)]="form.immatriculation"
+                   placeholder="Ex: DK-4521-A">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Année</label>
+            <select class="form-input" [(ngModel)]="form.annee">
+              <option *ngFor="let a of getAnneesDisponibles()" [value]="a">{{ a }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Couleur</label>
+            <input class="form-input" type="text" [(ngModel)]="form.couleur"
+                   placeholder="Ex: Rouge, Noir...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kilométrage actuel (km)</label>
+            <input class="form-input" type="number" [(ngModel)]="form.kilometrage"
+                   placeholder="Ex: 12500" min="0">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-cancel" (click)="showForm = false">Annuler</button>
+          <button class="btn-save" (click)="sauvegarder()" [disabled]="loadingSave">
+            <span *ngIf="!loadingSave">💾 Enregistrer</span>
+            <span *ngIf="loadingSave">⏳ Sauvegarde...</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- INFOS UTILES -->
+      <div class="tips-card" *ngIf="vehicule">
+        <div class="tc-title">💡 Conseils d'entretien</div>
+        <div class="tip-item">
+          <span class="tip-icon">🔧</span>
+          <span>Vidange tous les <strong>3 000 km</strong> pour une moto</span>
+        </div>
+        <div class="tip-item">
+          <span class="tip-icon">🔩</span>
+          <span>Vérifier la pression des pneus toutes les <strong>2 semaines</strong></span>
+        </div>
+        <div class="tip-item">
+          <span class="tip-icon">⛽</span>
+          <span>Faire le plein quand la jauge est à <strong>1/4</strong></span>
+        </div>
+        <div class="tip-item">
+          <span class="tip-icon">💡</span>
+          <span>Vérifier les freins tous les <strong>5 000 km</strong></span>
+        </div>
+        <div class="tip-item">
+          <span class="tip-icon">📋</span>
+          <span>Renouveler l'assurance avant <strong>expiration</strong></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HAMBURGER -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

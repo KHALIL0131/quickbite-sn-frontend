@@ -1,0 +1,334 @@
+<div class="page-wrap">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a class="nav-logo" (click)="onLogoClick()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </a>
+    <ul class="nav-links">
+      <li><a (click)="goToAccueil()">Accueil</a></li>
+      <li><a (click)="goToRestaurants()">Restaurants</a></li>
+      <li><a (click)="goToMenu()">Menu</a></li>
+      <li><a (click)="goToOffres()">Offres</a></li>
+      <li><a (click)="goToAPropos()">À propos</a></li>
+    </ul>
+    <div class="nav-location">
+      <span class="loc-dot">📍</span>
+      <div>
+        <div class="loc-sub">Livraison à</div>
+        <strong>Dakar, Plateau</strong>
+      </div>
+      <span class="loc-arrow">▾</span>
+    </div>
+    <div class="nav-right">
+      <button class="nav-msg-btn" *ngIf="utilisateur" (click)="goToMessagerie()">💬</button>
+      <div class="nav-cart" (click)="goToPanier()">
+        🛒
+        <div class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</div>
+      </div>
+      <button class="btn-login" (click)="goToLogin()">Connexion</button>
+      <button class="btn-cta-nav" (click)="goToRegister()">S'inscrire</button>
+      <button class="nav-burger" (click)="menuOpen = !menuOpen">
+        {{ menuOpen ? '✕' : '☰' }}
+      </button>
+    </div>
+  </nav>
+
+  <!-- MENU MOBILE -->
+  <div class="mobile-menu" [class.open]="menuOpen">
+    <a (click)="goToAccueil(); menuOpen=false">🏠 Accueil</a>
+    <a (click)="goToRestaurants(); menuOpen=false">🍽️ Restaurants</a>
+    <a (click)="goToMenu(); menuOpen=false">📋 Menu</a>
+    <a (click)="goToOffres(); menuOpen=false">🎁 Offres</a>
+    <a (click)="goToAPropos(); menuOpen=false">ℹ️ À propos</a>
+    <div class="mobile-menu-divider"></div>
+    <button class="btn-login-mobile" (click)="goToLogin(); menuOpen=false">Se connecter</button>
+    <button class="btn-cta-mobile" (click)="goToRegister(); menuOpen=false">S'inscrire gratuitement</button>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg-circle"></div>
+    <div class="hero-bg-circle"></div>
+    <div class="hero-bg-circle"></div>
+
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <div class="eyebrow-dot"></div>
+        🚀 Livraison en 30 min · Dakar et banlieue
+      </div>
+      <h1 class="hero-title">
+        Commandez ce<br>
+        que vous <span class="accent-yellow">aimez,</span><br>
+        livré <span class="accent-orange">chez vous</span>
+      </h1>
+      <p class="hero-subtitle">
+        120+ restaurants partenaires à Dakar. Payez avec Wave, Orange Money ou carte. Suivi en temps réel.
+      </p>
+      <div class="hero-search">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" [(ngModel)]="searchQuery"
+          placeholder="Chercher un restaurant ou un plat...">
+        <button class="search-btn" (click)="goToMenu()">Rechercher</button>
+      </div>
+      <div class="hero-tags">
+        <div class="hero-tag" (click)="filtrerCategorie('Burgers')">🍔 Burgers</div>
+        <div class="hero-tag" (click)="filtrerCategorie('Pizzas')">🍕 Pizzas</div>
+        <div class="hero-tag" (click)="filtrerCategorie('Sénégalais')">🍛 Thiéboudiène</div>
+        <div class="hero-tag" (click)="filtrerCategorie('Tacos')">🌮 Tacos</div>
+        <div class="hero-tag" (click)="filtrerCategorie('Salades')">🥗 Salades</div>
+        <div class="hero-tag" (click)="filtrerCategorie('Desserts')">🧁 Desserts</div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">{{ restaurants.length }}+</div>
+          <div class="stat-lbl">Restaurants</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">8 500</div>
+          <div class="stat-lbl">Clients actifs</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">4.9 ⭐</div>
+          <div class="stat-lbl">Note moyenne</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="food-card-main">
+        <div class="food-card-glow"></div>
+        <div class="food-emoji-giant">🍔</div>
+        <div class="food-card-badge">⭐ Top vente</div>
+        <div class="food-card-rating">⭐ 4.9</div>
+      </div>
+      <div class="info-cards-row">
+        <div class="info-card">
+          <span class="ic-icon">🛵</span>
+          <div class="ic-label">Livraison</div>
+          <div class="ic-value ic-green">28 min</div>
+          <div class="ic-sub">En route · 1.2 km</div>
+          <div class="ic-progress">
+            <div class="ic-progress-fill"></div>
+          </div>
+        </div>
+        <div class="info-card">
+          <span class="ic-icon">📦</span>
+          <div class="ic-label">Commande</div>
+          <div class="ic-value ic-orange">10 000 F</div>
+          <div class="ic-sub">Wave · Ibrahima F.</div>
+        </div>
+        <div class="info-card">
+          <span class="ic-icon">🏆</span>
+          <div class="ic-label">Meilleur resto</div>
+          <div class="ic-value ic-yellow">4.9 / 5</div>
+          <div class="ic-sub">234 avis positifs</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROMO BANNER -->
+  <div class="promo-banner">
+    <div class="promo-left">
+      <div class="promo-icon">🎁</div>
+      <div>
+        <div class="promo-title">Offre de bienvenue — 20% de réduction</div>
+        <div class="promo-sub">Sur votre première commande · Tous les restaurants</div>
+      </div>
+    </div>
+    <div class="promo-code">BIENVENUE20</div>
+    <button class="promo-btn" (click)="goToRegister()">J'en profite →</button>
+  </div>
+
+  <!-- CATEGORIES -->
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Explorer</div>
+        <div class="section-title">Catégories <span>populaires</span></div>
+      </div>
+      <a class="see-all" (click)="goToMenu()">Voir tout →</a>
+    </div>
+
+    <!-- CHARGEMENT CATEGORIES -->
+    <div class="loading-row" *ngIf="chargementCategories">
+      <div class="skeleton-pill" *ngFor="let i of [1,2,3,4,5,6]"></div>
+    </div>
+
+    <div class="categories-scroll" *ngIf="!chargementCategories">
+      <div class="cat-pill" *ngFor="let cat of categories" [class.active]="categorieActive === cat.nom"
+        (click)="filtrerCategorie(cat.nom)">
+        <div class="cat-emoji">{{ cat.emoji }}</div>
+        <div class="cat-name">{{ cat.nom }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESTAURANTS -->
+  <section class="section" style="padding-top:0">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Près de vous</div>
+        <div class="section-title">Restaurants <span>du moment</span></div>
+      </div>
+      <a class="see-all" (click)="goToMenu()">Voir tous →</a>
+    </div>
+
+    <!-- CHARGEMENT -->
+    <div class="loading-row" *ngIf="chargementRestaurants">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+    </div>
+
+    <!-- AUCUN RESTAURANT -->
+    <div class="empty-state" *ngIf="!chargementRestaurants && restaurants.length === 0">
+      <div class="empty-icon">🍽️</div>
+      <div class="empty-title">Aucun restaurant disponible</div>
+      <div class="empty-sub">L'admin doit ajouter des restaurants</div>
+    </div>
+
+    <!-- LISTE RESTAURANTS -->
+    <div class="resto-grid" *ngIf="!chargementRestaurants && restaurants.length > 0">
+      <div class="resto-card" *ngFor="let r of restaurants" (click)="goToMenu()">
+        <div class="resto-img" [style.background]="'linear-gradient(135deg, #1a2a0d, #0a1a2a)'">
+          <!-- PHOTO RÉELLE OU EMOJI -->
+          <img *ngIf="r.photo" [src]="getPhotoUrl(r.photo)" [alt]="r.nom" class="resto-photo">
+          <span *ngIf="!r.photo" class="resto-emoji">🍽️</span>
+          <div class="resto-badge" [class.badge-open]="r.est_ouvert" [class.badge-ferme]="!r.est_ouvert">
+            {{ r.est_ouvert ? '● Ouvert' : '○ Fermé' }}
+          </div>
+          <button class="resto-fav" (click)="toggleFav(r); $event.stopPropagation()">
+            {{ r.fav ? '❤️' : '🤍' }}
+          </button>
+        </div>
+        <div class="resto-body">
+          <div class="resto-name">{{ r.nom }}</div>
+          <div class="resto-tags">{{ r.description }}</div>
+          <div class="resto-meta">
+            <div class="resto-rating">
+              ⭐ {{ r.note_moyenne || '4.5' }}
+              <span class="rating-count">({{ r.nombre_avis || 0 }} avis)</span>
+            </div>
+            <div class="resto-info">
+              <span>🕐 {{ r.temps_livraison || '30 min' }}</span>
+              <span class="resto-sep">·</span>
+              <span class="resto-free">
+                {{ r.livraison_gratuite ? 'Livraison gratuite' : r.frais_livraison + ' F' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLATS POPULAIRES -->
+  <section class="section" style="padding-top:0">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Les incontournables</div>
+        <div class="section-title">🔥 Plats <span>populaires</span></div>
+      </div>
+      <a class="see-all" (click)="goToMenu()">Voir tout →</a>
+    </div>
+
+    <!-- CHARGEMENT -->
+    <div class="loading-row" *ngIf="chargementPlats">
+      <div class="skeleton-plat" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+
+    <!-- AUCUN PLAT -->
+    <div class="empty-state" *ngIf="!chargementPlats && plats.length === 0">
+      <div class="empty-icon">🍔</div>
+      <div class="empty-title">Aucun plat disponible</div>
+      <div class="empty-sub">L'admin doit ajouter des plats</div>
+    </div>
+
+    <!-- LISTE PLATS -->
+    <div class="plats-grid" *ngIf="!chargementPlats && plats.length > 0">
+      <div class="plat-card" *ngFor="let p of plats">
+        <div class="plat-img">
+          <img *ngIf="p.photo" [src]="getPlatPhotoUrl(p.photo)" [alt]="p.nom" class="plat-photo">
+          <span *ngIf="!p.photo" class="plat-emoji">{{ p.emoji || '🍽️' }}</span>
+          <div class="plat-hot" *ngIf="p.est_populaire">🔥 Top</div>
+        </div>
+        <div class="plat-body">
+          <div class="plat-name">{{ p.nom }}</div>
+          <div class="plat-resto">{{ p.restaurant_nom }}</div>
+          <div class="plat-footer">
+            <div class="plat-price">{{ p.prix | number }} F</div>
+            <button class="add-btn" (click)="ajouterAuPanier(p)">
+              {{ p.quantite > 0 ? p.quantite : '+' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMENT CA MARCHE -->
+  <section class="how-section">
+    <div class="section-header" style="justify-content:center;text-align:center;flex-direction:column;gap:8px">
+      <div class="section-eyebrow">Simple et rapide</div>
+      <div class="section-title">Comment ça <span>marche</span> ?</div>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card" *ngFor="let s of steps">
+        <div class="step-num" [ngClass]="'step-num-'+s.num">{{ s.num }}</div>
+        <div class="step-icon">{{ s.icon }}</div>
+        <div class="step-title">{{ s.titre }}</div>
+        <div class="step-desc">{{ s.desc }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">
+          <div class="logo-icon">🍔</div>
+          <div class="logo-text">Quick<span>Bite</span> SN</div>
+        </div>
+        <p class="footer-tagline">La meilleure plateforme de livraison de repas au Sénégal.</p>
+        <div class="footer-socials">
+          <div class="social-btn">📘</div>
+          <div class="social-btn">📸</div>
+          <div class="social-btn">🐦</div>
+          <div class="social-btn">▶️</div>
+        </div>
+        <div class="payment-logos">
+          <div class="pay-logo">📱 Wave</div>
+          <div class="pay-logo">🟠 Orange Money</div>
+          <div class="pay-logo">💳 Carte</div>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Application</div>
+        <a class="footer-link" href="#">Restaurants</a>
+        <a class="footer-link" href="#">Plats populaires</a>
+        <a class="footer-link" href="#">Offres du jour</a>
+        <a class="footer-link" href="#">Nouveautés</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Partenaires</div>
+        <a class="footer-link" href="#">Ouvrir un restaurant</a>
+        <a class="footer-link" href="#">Devenir livreur</a>
+        <a class="footer-link" href="#">Espace restaurant</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Support</div>
+        <a class="footer-link" href="#">Centre d'aide</a>
+        <a class="footer-link" href="#">Nous contacter</a>
+        <a class="footer-link" href="#">Confidentialité</a>
+        <a class="footer-link" href="#">À propos</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 QuickBite SN · Ibrahima Faye · Mansour Ba · Seydou Tall · Diouma Baldé · Master 1 UNCHK</span>
+      <span><a href="#">FR</a> · <a href="#">EN</a></span>
+    </div>
+  </footer>
+
+</div>

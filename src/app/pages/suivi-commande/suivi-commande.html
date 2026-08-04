@@ -1,0 +1,314 @@
+<div class="suivi-wrap">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+    <div class="live-pill">
+      <div class="live-dot"></div>
+      Suivi en direct
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn" (click)="goToHistorique()">📋 Mes commandes</button>
+      <div class="nav-avatar">{{ getInitiales() }}</div>
+    </div>
+  </nav>
+
+  <div class="track-wrap">
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement de votre commande...</span>
+    </div>
+
+    <!-- PAS DE COMMANDE -->
+    <div class="empty-state" *ngIf="!loading && !commande">
+      <div style="font-size:64px;margin-bottom:16px">📋</div>
+      <div class="es-title">Aucune commande trouvée</div>
+      <div class="es-sub">La commande n'existe pas ou vous n'y avez pas accès</div>
+      <button class="btn-goto" (click)="goToMenu()">🍽️ Commander maintenant</button>
+    </div>
+
+    <div *ngIf="!loading && commande">
+
+      <!-- ANNULÉE -->
+      <div class="annulee-banner" *ngIf="estAnnulee">
+        ❌ Cette commande a été annulée
+      </div>
+
+      <!-- HEADER -->
+      <div class="order-ref">COMMANDE #{{ commande.numero }}</div>
+      <div class="page-title" *ngIf="!estLivree && !estAnnulee">Votre repas arrive ! 🛵</div>
+      <div class="page-title" *ngIf="estLivree">Commande livrée ! ✅</div>
+      <div class="page-title" *ngIf="estAnnulee">Commande annulée</div>
+      <div class="page-sub">
+        {{ commande.restaurant_nom }} ·
+        {{ commande.created_at | date:'dd MMM yyyy · HH:mm' }}
+      </div>
+
+      <!-- ETA CARD -->
+      <div class="eta-card" *ngIf="!estLivree && !estAnnulee">
+        <div class="eta-left">
+          <div class="eta-label">⏱ Temps d'arrivée estimé</div>
+          <div class="eta-time">
+            {{ padZero(minutesRestantes) }}<span class="eta-sep">:</span>{{ padZero(secondesRestantes) }}
+          </div>
+          <div class="eta-sub">
+            🛵 {{ commande.livreur_nom || 'Livreur en route' }}
+          </div>
+        </div>
+        <div class="eta-right">
+          <div class="eta-progress-wrap">
+            <div class="eta-progress-bar">
+              <div class="eta-progress-fill" [style.width]="progression + '%'"></div>
+            </div>
+            <div class="eta-pct">{{ progression }}%</div>
+          </div>
+          <div class="eta-statut">
+            {{ commande.statut === 'nouvelle' ? '🆕 Nouvelle commande' :
+               commande.statut === 'preparation' ? '👨‍🍳 En préparation' :
+               commande.statut === 'en_livraison' ? '🛵 En livraison' : commande.statut }}
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVRÉ SUCCESS -->
+      <div class="livree-card" *ngIf="estLivree">
+        <div class="lc-icon">🎉</div>
+        <div class="lc-title">Bonne dégustation !</div>
+        <div class="lc-sub">Votre commande a été livrée avec succès</div>
+        <button class="btn-noter" (click)="showNoteModal = true" *ngIf="!noteEnvoyee">
+          ⭐ Noter ma commande
+        </button>
+        <div class="note-done" *ngIf="noteEnvoyee">✅ Merci pour votre note !</div>
+      </div>
+
+      <!-- CARTE SIMULÉE -->
+      <div class="map-card" *ngIf="!estAnnulee">
+        <div class="map-bg"></div>
+        <div class="map-grid"></div>
+        <div class="map-content">
+          <div class="map-scooter" *ngIf="!estLivree">🛵</div>
+          <div class="map-scooter done" *ngIf="estLivree">🏠</div>
+        </div>
+        <div class="map-livreur-card" *ngIf="commande.livreur_nom">
+          <div class="livreur-avatar">{{ getInitialesLivreur() }}</div>
+          <div class="livreur-info">
+            <div class="livreur-name">{{ commande.livreur_nom }}</div>
+            <div class="livreur-sub">Livreur certifié QuickBite SN</div>
+          </div>
+          <div class="livreur-actions">
+            <button class="livreur-btn" (click)="appelerLivreur()" title="Appeler">📞</button>
+            <button class="livreur-btn" (click)="chatLivreur()" title="WhatsApp">💬</button>
+          </div>
+        </div>
+        <div class="map-no-livreur" *ngIf="!commande.livreur_nom">
+          <div class="map-scooter">🛵</div>
+          <div>Livreur en cours d'assignation...</div>
+        </div>
+      </div>
+
+      <!-- TIMELINE -->
+      <div class="timeline">
+        <div class="tl-title">📍 Statut de votre commande</div>
+
+        <div class="tl-item" *ngFor="let e of etapes; let last = last">
+          <div class="tl-left">
+            <div class="tl-dot" [ngClass]="e.statut">
+              <span *ngIf="e.statut === 'done'">✓</span>
+              <span *ngIf="e.statut === 'active'">{{ e.icon }}</span>
+              <span *ngIf="e.statut === 'pending'">{{ e.id }}</span>
+            </div>
+            <div class="tl-line" *ngIf="!last" [ngClass]="e.statut === 'done' ? 'done' : 'pending'"></div>
+          </div>
+          <div class="tl-right">
+            <div class="tl-status" [class.pending]="e.statut === 'pending'">{{ e.label }}</div>
+            <div class="tl-desc">{{ e.desc }}</div>
+            <div class="tl-time" *ngIf="e.heure" [class.now]="e.heure.includes('Maintenant')">
+              {{ e.heure }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIONS RAPIDES -->
+      <div class="quick-actions">
+        <button class="qa-btn" (click)="goToMenu()">
+          <span>🍽️</span>
+          <span>Commander encore</span>
+        </button>
+        <button class="qa-btn" (click)="goToHistorique()">
+          <span>📋</span>
+          <span>Mes commandes</span>
+        </button>
+        <button class="qa-btn" (click)="showNoteModal = true" *ngIf="estLivree && !noteEnvoyee">
+          <span>⭐</span>
+          <span>Donner un avis</span>
+        </button>
+        <button class="qa-btn danger" (click)="annulerCommande()" *ngIf="peutAnnuler">
+          <span>❌</span>
+          <span>Annuler</span>
+        </button>
+        <button class="qa-btn" (click)="showProblemeModal = true">
+          <span>🆘</span>
+          <span>Signaler</span>
+        </button>
+      </div>
+
+      <!-- RÉCAPITULATIF -->
+      <div class="recap-card">
+        <div class="recap-title">🧾 Récapitulatif · #{{ commande.numero }}</div>
+
+        <div class="recap-items" *ngIf="commande.details?.length > 0">
+          <div class="ri-row" *ngFor="let d of commande.details">
+            <span class="ri-emoji">{{ d.emoji || '🍽️' }}</span>
+            <span class="ri-name">{{ d.plat_nom }}</span>
+            <span class="ri-qty">×{{ d.quantite }}</span>
+            <span class="ri-price">{{ formaterMontant(d.prix_unitaire * d.quantite) }}</span>
+          </div>
+        </div>
+
+        <div class="recap-totaux">
+          <div class="recap-row">
+            <span>Sous-total</span>
+            <span>{{ formaterMontant(commande.montant_total + (commande.reduction || 0)) }}</span>
+          </div>
+          <div class="recap-row green" *ngIf="commande.reduction > 0">
+            <span>🎁 Réduction ({{ commande.code_promo }})</span>
+            <span>−{{ formaterMontant(commande.reduction) }}</span>
+          </div>
+          <div class="recap-row">
+            <span>Livraison</span>
+            <span class="green">
+              {{ commande.frais_livraison > 0 ? formaterMontant(commande.frais_livraison) : 'Gratuite' }}
+            </span>
+          </div>
+          <div class="recap-row total">
+            <span>Total payé · {{ commande.mode_paiement || 'Wave' }}</span>
+            <span>{{ formaterMontant(commande.montant_total) }}</span>
+          </div>
+        </div>
+
+        <div class="recap-adresse">
+          📍 {{ commande.adresse_livraison }}
+        </div>
+
+        <div class="recap-actions">
+          <button class="btn-noter" (click)="showNoteModal = true" *ngIf="estLivree && !noteEnvoyee">
+            ⭐ Noter ma commande
+          </button>
+          <button class="btn-probleme" (click)="showProblemeModal = true">
+            🆘 Problème avec ma commande
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ MODAL NOTATION ══ -->
+  <div class="modal-overlay" [class.show]="showNoteModal"
+       (click)="$event.target === $event.currentTarget && (showNoteModal = false)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">⭐ Noter votre commande</div>
+        <button class="modal-close" (click)="showNoteModal = false">✕</button>
+      </div>
+      <div class="modal-body" *ngIf="!noteEnvoyee">
+        <div class="note-sub">{{ commande?.restaurant_nom }}</div>
+        <div class="stars-row">
+          <span class="star" *ngFor="let s of [1,2,3,4,5]"
+                [class.active]="s <= noteSelectionnee"
+                (click)="noteSelectionnee = s">⭐</span>
+        </div>
+        <div class="note-labels">
+          <span *ngIf="noteSelectionnee === 1">😞 Très mauvais</span>
+          <span *ngIf="noteSelectionnee === 2">😐 Mauvais</span>
+          <span *ngIf="noteSelectionnee === 3">🙂 Correct</span>
+          <span *ngIf="noteSelectionnee === 4">😊 Bien</span>
+          <span *ngIf="noteSelectionnee === 5">🤩 Excellent !</span>
+        </div>
+        <textarea class="note-textarea" [(ngModel)]="noteCommentaire"
+                  placeholder="Partagez votre expérience... (optionnel)"
+                  rows="3"></textarea>
+        <button class="btn-envoyer-note" (click)="noterCommande()"
+                [disabled]="noteSelectionnee === 0">
+          ✅ Envoyer mon avis
+        </button>
+      </div>
+      <div class="modal-body success" *ngIf="noteEnvoyee">
+        <div style="font-size:64px;text-align:center;margin-bottom:12px">🎉</div>
+        <div style="font-size:18px;font-weight:700;color:#FFFFFF;text-align:center">Merci pour votre avis !</div>
+        <div style="font-size:14px;color:#6B8F77;text-align:center;margin-top:8px">
+          Votre note aide les autres clients à choisir.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL PROBLÈME ══ -->
+  <div class="modal-overlay" [class.show]="showProblemeModal"
+       (click)="$event.target === $event.currentTarget && (showProblemeModal = false)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🆘 Signaler un problème</div>
+        <button class="modal-close" (click)="showProblemeModal = false">✕</button>
+      </div>
+      <div class="modal-body" *ngIf="!problemeEnvoye">
+        <div class="probleme-options">
+          <div class="po-btn" (click)="problemeTexte = 'Commande incorrecte ou manquante'">
+            📦 Commande incorrecte ou manquante
+          </div>
+          <div class="po-btn" (click)="problemeTexte = 'Plat froid ou mauvaise qualité'">
+            🌡️ Plat froid ou mauvaise qualité
+          </div>
+          <div class="po-btn" (click)="problemeTexte = 'Livreur introuvable ou non contactable'">
+            🛵 Livreur introuvable
+          </div>
+          <div class="po-btn" (click)="problemeTexte = 'Retard excessif de livraison'">
+            ⏰ Retard excessif
+          </div>
+          <div class="po-btn" (click)="problemeTexte = 'Problème de paiement'">
+            💳 Problème de paiement
+          </div>
+        </div>
+        <textarea class="note-textarea" [(ngModel)]="problemeTexte"
+                  placeholder="Décrivez votre problème..."
+                  rows="3"></textarea>
+        <button class="btn-envoyer-note" (click)="signalerProbleme()"
+                [disabled]="!problemeTexte.trim()">
+          📤 Envoyer le signalement
+        </button>
+      </div>
+      <div class="modal-body success" *ngIf="problemeEnvoye">
+        <div style="font-size:64px;text-align:center;margin-bottom:12px">✅</div>
+        <div style="font-size:18px;font-weight:700;color:#FFFFFF;text-align:center">
+          Signalement envoyé !
+        </div>
+        <div style="font-size:14px;color:#6B8F77;text-align:center;margin-top:8px">
+          Notre équipe vous contactera rapidement.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="footer-links">
+        <a (click)="goToAccueil()">Accueil</a>
+        <a (click)="goToMenu()">Menu</a>
+        <a (click)="goToHistorique()">Mes commandes</a>
+      </div>
+      <div class="footer-copy">© 2026 QuickBite SN</div>
+    </div>
+  </footer>
+
+</div>

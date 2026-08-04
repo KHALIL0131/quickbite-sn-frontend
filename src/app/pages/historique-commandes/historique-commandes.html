@@ -1,0 +1,240 @@
+<div class="histo-wrap">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+    <div class="nav-right">
+      <button class="nav-msg-btn" *ngIf="utilisateur" (click)="goToMessagerie()">💬</button>
+      <button class="nav-btn" (click)="goToMenu()">🍽️ Menu</button>
+      <button class="nav-cart" (click)="goToPanier()">
+        🛒 Panier
+        <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+      </button>
+      <div class="nav-avatar" (click)="goToProfil()">{{ getInitiales() }}</div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Mes commandes 📋</div>
+        <div class="ph-sub">
+          Historique complet · {{ utilisateur?.prenom }} {{ utilisateur?.nom }}
+        </div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-sm danger" (click)="viderHistorique()"
+                *ngIf="commandes.length > 0">
+          🗑 Vider l'historique
+        </button>
+        <button class="btn-sm" (click)="exporterPDF()"
+                *ngIf="commandes.length > 0">
+          📄 Exporter
+        </button>
+        <button class="btn-sm" (click)="exporterExcel()">Export Excel</button>
+        <button class="btn-sm" (click)="goToProfil()">
+          ← Retour profil
+        </button>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement de vos commandes...</span>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- STATS -->
+      <div class="stats-strip">
+        <div class="ss-card">
+          <div class="ss-val orange">{{ totalCommandes }}</div>
+          <div class="ss-lbl">Total commandes</div>
+        </div>
+        <div class="ss-card">
+          <div class="ss-val yellow">{{ formaterMontant(totalDepense) }}</div>
+          <div class="ss-lbl">Total dépensé</div>
+        </div>
+        <div class="ss-card">
+          <div class="ss-val green">{{ totalLivrees }}</div>
+          <div class="ss-lbl">Livrées ✅</div>
+        </div>
+        <div class="ss-card">
+          <div class="ss-val muted">{{ totalAnnulees }}</div>
+          <div class="ss-lbl">Annulées</div>
+        </div>
+      </div>
+
+      <!-- FILTRES -->
+      <div class="filter-bar">
+        <button class="fb-btn" [class.active]="filtreActif === 'toutes'"
+                (click)="setFiltre('toutes')">
+          Toutes ({{ totalCommandes }})
+        </button>
+        <button class="fb-btn" [class.active]="filtreActif === 'livrees'"
+                (click)="setFiltre('livrees')">
+          ✅ Livrées ({{ totalLivrees }})
+        </button>
+        <button class="fb-btn" [class.active]="filtreActif === 'annulees'"
+                (click)="setFiltre('annulees')">
+          ✗ Annulées ({{ totalAnnulees }})
+        </button>
+        <button class="fb-btn" [class.active]="filtreActif === 'encours'"
+                (click)="setFiltre('encours')">
+          🛵 En cours ({{ totalEnCours }})
+        </button>
+        <div class="filter-right">
+          <select class="filter-sel" [(ngModel)]="sortActif" (change)="filtrer()">
+            <option value="recent">Trier : Plus récent</option>
+            <option value="ancien">Plus ancien</option>
+            <option value="prix">Prix ↓</option>
+          </select>
+          <select class="filter-sel" [(ngModel)]="periodeFiltree" (change)="filtrer()">
+            <option value="tout">Période : Tout</option>
+            <option value="mois">Ce mois</option>
+            <option value="3mois">3 derniers mois</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- EMPTY -->
+      <div class="empty-state" *ngIf="commandesFiltrees.length === 0">
+        <div style="font-size:64px;margin-bottom:16px">📋</div>
+        <div class="es-title">Aucune commande trouvée</div>
+        <div class="es-sub">
+          {{ filtreActif === 'toutes' ? 'Passez votre première commande !' : 'Aucune commande dans cette catégorie' }}
+        </div>
+        <button class="btn-commander" (click)="goToMenu()">🍽️ Commander maintenant</button>
+      </div>
+
+      <!-- COMMANDES PAR MOIS -->
+      <div *ngFor="let groupe of commandesParMois" class="month-group">
+
+        <div class="month-label">
+          {{ groupe.mois }}
+          <div class="month-line"></div>
+          <span class="month-total">
+            {{ formaterMontant(getMoisTotal($any(groupe.cmds))) }} ·
+            {{ $any(groupe.cmds).length }} commande{{ $any(groupe.cmds).length > 1 ? 's' : '' }}
+          </span>
+        </div>
+
+        <div class="order-card" *ngFor="let c of $any(groupe.cmds)"
+             [class.expanded]="c.ouvert">
+
+          <!-- HEADER -->
+          <div class="oc-header" (click)="toggleDetail(c)">
+            <div class="oc-emoji">
+              {{ c.details?.[0]?.emoji || '🍽️' }}
+            </div>
+            <div class="oc-info">
+              <div class="oc-title">
+                {{ c.restaurant_nom || 'Restaurant' }} ·
+                {{ c.details?.length || 0 }} article{{ (c.details?.length || 0) > 1 ? 's' : '' }}
+              </div>
+              <div class="oc-meta">
+                #{{ c.numero }} ·
+                {{ c.created_at | date:'dd MMM yyyy · HH:mm' }} ·
+                {{ c.mode_paiement || 'Wave' }}
+              </div>
+            </div>
+            <div class="oc-right">
+              <div class="oc-price">{{ formaterMontant(c.montant_total) }}</div>
+              <span class="status-pill" [ngClass]="getStatutClass(c.statut)">
+                {{ getStatutLabel(c.statut) }}
+              </span>
+            </div>
+            <div class="oc-expand">{{ c.ouvert ? '▾' : '▸' }}</div>
+          </div>
+
+          <!-- DETAIL EXPANDÉ -->
+          <div class="oc-detail" *ngIf="c.ouvert">
+            <div class="detail-items">
+              <div class="di-row" *ngFor="let d of c.details">
+                <div class="di-emoji">{{ d.emoji || '🍽️' }}</div>
+                <div class="di-name">{{ d.plat_nom }}</div>
+                <div class="di-qty">×{{ d.quantite }}</div>
+                <div class="di-price">{{ formaterMontant(d.prix_unitaire * d.quantite) }}</div>
+              </div>
+              <div class="di-row empty" *ngIf="!c.details || c.details.length === 0">
+                <div class="di-name" style="color:#6B8F77">Détails non disponibles</div>
+              </div>
+            </div>
+
+            <div class="detail-totaux">
+              <div class="dt-row">
+                <span>Sous-total</span>
+                <span>{{ formaterMontant(c.montant_total + (c.reduction || 0)) }}</span>
+              </div>
+              <div class="dt-row green" *ngIf="c.reduction > 0">
+                <span>🎁 Réduction ({{ c.code_promo }})</span>
+                <span>−{{ formaterMontant(c.reduction) }}</span>
+              </div>
+              <div class="dt-row">
+                <span>Livraison</span>
+                <span class="green">{{ c.frais_livraison > 0 ? formaterMontant(c.frais_livraison) : 'Gratuite' }}</span>
+              </div>
+              <div class="dt-row total">
+                <span>Total payé</span>
+                <span>{{ formaterMontant(c.montant_total) }}</span>
+              </div>
+            </div>
+
+            <div class="detail-footer">
+              <div class="df-info">
+                📍 {{ c.adresse_livraison }}
+                <span *ngIf="c.notes"> · 📝 {{ c.notes }}</span>
+              </div>
+              <div class="df-actions">
+                <button class="da-btn" (click)="suivreCommande(c)"
+                        *ngIf="c.statut === 'en_livraison' || c.statut === 'nouvelle' || c.statut === 'preparation'">
+                  📍 Suivre
+                </button>
+                <button class="da-btn primary" (click)="recommander(c)">
+                  🔄 Recommander
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button class="pb" [disabled]="page === 1" (click)="page = page - 1; cdr.detectChanges()">←</button>
+        <button class="pb" *ngFor="let p of pages"
+                [class.active]="page === p"
+                (click)="page = p; cdr.detectChanges()">
+          {{ p }}
+        </button>
+        <button class="pb" [disabled]="page === totalPages" (click)="page = page + 1; cdr.detectChanges()">→</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="footer-links">
+        <a (click)="goToAccueil()">Accueil</a>
+        <a (click)="goToMenu()">Menu</a>
+        <a (click)="goToPanier()">Panier</a>
+        <a (click)="goToProfil()">Mon profil</a>
+      </div>
+      <div class="footer-copy">© 2026 QuickBite SN · Dakar, Sénégal</div>
+    </div>
+  </footer>
+
+</div>

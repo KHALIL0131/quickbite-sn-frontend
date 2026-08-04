@@ -1,0 +1,238 @@
+<div class="detail-wrap">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+    <div class="nav-right">
+      <button class="btn-back" (click)="goToMenu()">← Retour au menu</button>
+      <button class="nav-cart" (click)="goToPanier()">
+        🛒 Panier
+        <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- LOADING -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Chargement du plat...</span>
+  </div>
+
+  <!-- EMPTY -->
+  <div class="empty-state" *ngIf="!loading && !plat">
+    <div style="font-size:64px;margin-bottom:16px">🍽️</div>
+    <div class="es-title">Plat non trouvé</div>
+    <button class="btn-menu" (click)="goToMenu()">🍽️ Voir le menu</button>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="detail-layout" *ngIf="!loading && plat">
+
+    <!-- MAIN -->
+    <div class="detail-main">
+
+      <!-- BREADCRUMB -->
+      <div class="breadcrumb">
+        <span (click)="goToAccueil()">Accueil</span>
+        <span class="sep">›</span>
+        <span (click)="goToMenu()">{{ plat.restaurant_nom || 'Menu' }}</span>
+        <span class="sep">›</span>
+        <span class="bc-active">{{ plat.nom }}</span>
+      </div>
+
+      <!-- HERO IMAGE -->
+      <div class="plat-hero">
+        <img *ngIf="plat.photo" [src]="getPlatPhotoUrl(plat.photo)" [alt]="plat.nom" class="hero-img">
+        <div class="plat-emoji" *ngIf="!plat.photo">{{ plat.emoji || '🍽️' }}</div>
+        <div class="hero-top-badges">
+          <span class="h-badge hb-hot" *ngIf="plat.est_populaire">🔥 Top vente</span>
+          <span class="h-badge hb-star" *ngIf="plat.note_moyenne >= 4.5">⭐ Coup de cœur</span>
+          <span class="h-badge hb-cat" *ngIf="plat.categorie_nom">{{ plat.categorie_nom }}</span>
+        </div>
+        <button class="hero-fav" (click)="toggleFavori()">{{ favori ? '❤️' : '🤍' }}</button>
+      </div>
+
+      <!-- INFOS PLAT -->
+      <div class="plat-title-row">
+        <div class="plat-title">{{ plat.nom }}</div>
+      </div>
+
+      <div class="plat-meta">
+        <span class="meta-item rating" *ngIf="plat.note_moyenne > 0">
+          ⭐ {{ plat.note_moyenne }}
+          <span style="color:#6B8F77;font-weight:400">({{ plat.nombre_commandes || 0 }} commandes)</span>
+        </span>
+        <span class="meta-item" *ngIf="plat.restaurant_nom">· 🏪 {{ plat.restaurant_nom }}</span>
+        <span class="meta-item available">· ✅ Disponible</span>
+        <span class="meta-item">· 🕐 15 min de préparation</span>
+      </div>
+
+      <p class="plat-desc" *ngIf="plat.description">{{ plat.description }}</p>
+
+      <!-- OPTIONS TAILLE -->
+      <div class="option-section">
+        <div class="opt-title">Options disponibles</div>
+        <div class="opt-subtitle">Sélection optionnelle</div>
+        <div class="options-grid">
+          <div class="option-card" *ngFor="let opt of options"
+               [class.selected]="optionSelectionnee === opt.id"
+               (click)="selectionnerOption(opt)">
+            <div class="opt-info">
+              <div class="opt-name">{{ opt.nom }}</div>
+              <div class="opt-sub">{{ opt.desc }}</div>
+            </div>
+            <div class="opt-right">
+              <div class="opt-price" *ngIf="opt.supplement > 0">+{{ formaterMontant(opt.supplement) }}</div>
+              <div class="opt-radio"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPPLÉMENTS -->
+      <div class="option-section">
+        <div class="opt-title">Suppléments</div>
+        <div class="opt-subtitle">Optionnel · Plusieurs choix possibles</div>
+        <div class="extras-list">
+          <div class="extra-item" *ngFor="let e of supplements"
+               [class.checked]="e.checked"
+               (click)="toggleSupplement(e)">
+            <div class="extra-left">
+              <span class="extra-emoji">{{ e.emoji }}</span>
+              <div>
+                <div class="extra-name">{{ e.nom }}</div>
+                <div class="extra-sub">{{ e.desc }}</div>
+              </div>
+            </div>
+            <div class="extra-right">
+              <div class="extra-price">+{{ formaterMontant(e.prix) }}</div>
+              <div class="extra-check">{{ e.checked ? '✓' : '' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AVIS -->
+      <div class="option-section" *ngIf="avisListe.length > 0">
+        <div class="opt-title">Avis clients ({{ avisListe.length }})</div>
+        <div class="reviews-list">
+          <div class="review-card" *ngFor="let a of avisListe.slice(0, 5)">
+            <div class="review-header">
+              <div class="rev-avatar">{{ a.client_prenom?.[0] || '?' }}</div>
+              <div>
+                <div class="rev-name">{{ a.client_prenom }} {{ a.client_nom }}</div>
+                <div class="rev-date">{{ formaterDate(a.created_at) }}</div>
+              </div>
+            </div>
+            <div class="rev-stars">
+              <span *ngFor="let s of [1,2,3,4,5]">{{ s <= a.note ? '⭐' : '☆' }}</span>
+            </div>
+            <div class="rev-text">{{ a.commentaire }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLATS SIMILAIRES -->
+      <div class="option-section" *ngIf="platsSimilaires.length > 0">
+        <div class="opt-title">🍽️ Plats similaires</div>
+        <div class="similaires-grid">
+          <div class="sim-card" *ngFor="let p of platsSimilaires"
+               (click)="router.navigate(['/detail-plat'], {queryParams: {id: p.id}})">
+            <div class="sim-img">
+              <img *ngIf="p.photo" [src]="getPlatPhotoUrl(p.photo)" [alt]="p.nom">
+              <span *ngIf="!p.photo">{{ p.emoji || '🍽️' }}</span>
+            </div>
+            <div class="sim-body">
+              <div class="sim-nom">{{ p.nom }}</div>
+              <div class="sim-resto">{{ p.restaurant_nom }}</div>
+              <div class="sim-footer">
+                <div class="sim-prix">{{ formaterMontant(p.prix) }}</div>
+                <button class="sim-add" (click)="ajouterAuPanier(p); $event.stopPropagation()">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ORDER PANEL -->
+    <div class="order-panel">
+      <div class="op-title">Votre commande</div>
+      <div class="op-sub">{{ plat.nom }}</div>
+
+      <div class="price-main">{{ formaterMontant(getPrixTotal()) }}</div>
+      <div class="price-base" *ngIf="getSupplementsTotal() > 0">
+        Base : {{ formaterMontant(plat.prix) }}
+      </div>
+
+      <!-- QUANTITÉ -->
+      <div class="qty-section">
+        <div class="qty-label">Quantité</div>
+        <div class="qty-control">
+          <button class="qty-btn" (click)="decrementer()">−</button>
+          <span class="qty-num">{{ quantite }}</span>
+          <button class="qty-btn" (click)="incrementer()">+</button>
+        </div>
+      </div>
+
+      <!-- NOTE -->
+      <div class="note-label">Note spéciale (optionnel)</div>
+      <textarea class="note-input" [(ngModel)]="noteSpeciale"
+                placeholder="Sans oignon, extra sauce, bien cuit..."></textarea>
+
+      <!-- RÉSUMÉ -->
+      <div class="order-summary">
+        <div class="sum-row">
+          <span>{{ plat.nom }} × {{ quantite }}</span>
+          <span>{{ formaterMontant(plat.prix * quantite) }}</span>
+        </div>
+        <div class="sum-row" *ngFor="let s of supplements.filter($any(s => s.checked))">
+          <span>{{ s.nom }}</span>
+          <span>+{{ formaterMontant(s.prix * quantite) }}</span>
+        </div>
+        <div class="sum-row">
+          <span>Livraison</span>
+          <span class="sum-free">Gratuite</span>
+        </div>
+        <div class="sum-row total">
+          <span>Total</span>
+          <span class="sum-price">{{ formaterMontant(getPrixTotal() * quantite) }}</span>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <button class="btn-add" (click)="ajouterAuPanier()">
+        🛒 Ajouter au panier
+      </button>
+      <button class="btn-now" (click)="commanderMaintenant()">
+        ⚡ Commander maintenant
+      </button>
+
+      <!-- INFOS LIVRAISON -->
+      <div class="delivery-badges">
+        <div class="del-badge">
+          <strong>⏱ 25-35 min</strong>
+          <span>Délai livraison</span>
+        </div>
+        <div class="del-badge">
+          <strong>🚚 Gratuite</strong>
+          <span>Livraison</span>
+        </div>
+        <div class="del-badge">
+          <strong>📱 Wave</strong>
+          <span>Paiement</span>
+        </div>
+        <div class="del-badge">
+          <strong>🟠 OM</strong>
+          <span>Orange Money</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

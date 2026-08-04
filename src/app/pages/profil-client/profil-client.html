@@ -1,0 +1,344 @@
+<div class="profil-wrap">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+    <div class="nav-right">
+      <button class="nav-msg-btn" *ngIf="utilisateur" (click)="goToMessagerie()">💬</button>
+      <button class="nav-btn" (click)="goToMenu()">🍽️ Menu</button>
+      <button class="nav-btn" (click)="goToPanier()">🛒 Panier</button>
+      <button class="btn-back" (click)="goToAccueil()">← Retour</button>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+
+    <!-- ALERTS -->
+    <div class="alert-success" *ngIf="succes">✅ {{ succes }}</div>
+    <div class="alert-error" *ngIf="erreur">⚠️ {{ erreur }}</div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement du profil...</span>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- PROFILE HERO -->
+      <div class="profile-hero">
+        <div class="avatar-wrap">
+          <div class="avatar">{{ getInitiales() }}</div>
+          <div class="avatar-edit" (click)="showEdit = true">✏️</div>
+        </div>
+
+        <div class="profile-info">
+          <div class="profile-name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+          <div class="profile-email">
+            {{ utilisateur?.email }} · {{ utilisateur?.telephone || 'Téléphone non renseigné' }}
+          </div>
+          <div class="profile-badges">
+            <span class="p-badge pb-member">🛒 Client</span>
+            <span class="p-badge pb-gold" *ngIf="commandes.length >= 10">⭐ Membre Gold</span>
+            <span class="p-badge pb-verified" *ngIf="utilisateur?.est_verifie">✅ Vérifié</span>
+          </div>
+          <div class="profile-stats">
+            <div class="ps-item">
+              <div class="ps-val orange">{{ commandes.length }}</div>
+              <div class="ps-lbl">Commandes</div>
+            </div>
+            <div class="ps-item">
+              <div class="ps-val yellow">{{ formaterMontant(getTotalDepense()) }}</div>
+              <div class="ps-lbl">Total dépensé</div>
+            </div>
+            <div class="ps-item">
+              <div class="ps-val green">{{ favoris.length }}</div>
+              <div class="ps-lbl">Favoris</div>
+            </div>
+            <div class="ps-item">
+              <div class="ps-val blue">{{ adresses.length }}</div>
+              <div class="ps-lbl">Adresses</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="btn-edit" (click)="showEdit = true">✏️ Modifier le profil</button>
+          <button class="btn-logout" (click)="deconnecter()">🚪 Se déconnecter</button>
+        </div>
+      </div>
+
+      <!-- MODAL EDIT -->
+      <div class="modal-overlay" [class.show]="showEdit"
+           (click)="$event.target === $event.currentTarget && (showEdit = false)">
+        <div class="modal-edit">
+          <div class="modal-header">
+            <div class="modal-title">✏️ Modifier le profil</div>
+            <button class="modal-close" (click)="showEdit = false">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Prénom</label>
+                <input class="form-input" type="text" [(ngModel)]="editForm.prenom">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nom</label>
+                <input class="form-input" type="text" [(ngModel)]="editForm.nom">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Téléphone</label>
+              <input class="form-input" type="tel" [(ngModel)]="editForm.telephone"
+                     placeholder="77 123 45 67">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ville</label>
+              <input class="form-input" type="text" [(ngModel)]="editForm.ville">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Adresse</label>
+              <input class="form-input" type="text" [(ngModel)]="editForm.adresse"
+                     placeholder="Rue, quartier...">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-cancel" (click)="showEdit = false">Annuler</button>
+            <button class="btn-save" (click)="sauvegarderProfil()" [disabled]="loadingSave">
+              <span *ngIf="!loadingSave">💾 Enregistrer</span>
+              <span *ngIf="loadingSave">⏳ Sauvegarde...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAYOUT -->
+      <div class="profile-layout">
+
+        <!-- NAV GAUCHE -->
+        <div class="profile-nav">
+          <div class="pnav-item" [class.active]="sectionActive === 'commandes'"
+               (click)="sectionActive = 'commandes'">
+            <span class="pnav-icon">📋</span>
+            Mes commandes
+            <span class="pnav-badge" *ngIf="commandes.length > 0">{{ commandes.length }}</span>
+          </div>
+          <div class="pnav-item" [class.active]="sectionActive === 'favoris'"
+               (click)="sectionActive = 'favoris'">
+            <span class="pnav-icon">❤️</span>
+            Mes favoris
+          </div>
+          <div class="pnav-item" [class.active]="sectionActive === 'adresses'"
+               (click)="sectionActive = 'adresses'">
+            <span class="pnav-icon">📍</span>
+            Mes adresses
+          </div>
+          <div class="pnav-item" [class.active]="sectionActive === 'paiements'"
+               (click)="sectionActive = 'paiements'">
+            <span class="pnav-icon">💳</span>
+            Paiements
+          </div>
+          <div class="pnav-item" [class.active]="sectionActive === 'securite'"
+               (click)="sectionActive = 'securite'">
+            <span class="pnav-icon">🔒</span>
+            Sécurité
+          </div>
+          <div class="pnav-item" (click)="goToHistorique()">
+            <span class="pnav-icon">📦</span>
+            Historique complet
+          </div>
+          <div class="pnav-item" (click)="deconnecter()">
+            <span class="pnav-icon">🚪</span>
+            Se déconnecter
+          </div>
+        </div>
+
+        <!-- CONTENU -->
+        <div class="profile-content">
+
+          <!-- ══ COMMANDES ══ -->
+          <div class="content-card" *ngIf="sectionActive === 'commandes'">
+            <div class="cc-title">
+              📋 Mes commandes récentes
+              <span class="cc-see-all" (click)="goToHistorique()">Voir tout →</span>
+            </div>
+
+            <div class="loading-state" *ngIf="loadingCommandes">
+              <div class="spinner"></div>
+              <span>Chargement...</span>
+            </div>
+
+            <div class="empty-state" *ngIf="!loadingCommandes && commandes.length === 0">
+              <div style="font-size:48px;margin-bottom:12px">📋</div>
+              <div class="es-title">Aucune commande</div>
+              <div class="es-sub">Passez votre première commande !</div>
+              <button class="btn-goto" (click)="goToMenu()">🍽️ Commander maintenant</button>
+            </div>
+
+            <div class="order-item" *ngFor="let c of commandes.slice(0, 5)">
+              <div class="oi-emoji">
+                {{ c.details?.[0]?.emoji || '🍽️' }}
+              </div>
+              <div class="oi-info">
+                <div class="oi-name">
+                  Commande #{{ c.numero }}
+                  <span *ngIf="c.details?.length > 1"> · {{ c.details?.length }} articles</span>
+                </div>
+                <div class="oi-date">
+                  {{ c.restaurant_nom || 'Restaurant' }} ·
+                  {{ c.created_at | date:'dd MMM yyyy · HH:mm' }}
+                </div>
+              </div>
+              <div class="oi-right">
+                <div class="oi-price">{{ formaterMontant(c.montant_total) }}</div>
+                <span class="oi-status" [ngClass]="getStatutClass(c.statut)">
+                  {{ getStatutLabel(c.statut) }}
+                </span>
+                <button class="oi-reorder" (click)="recommander(c)">🔄 Recommander</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ FAVORIS ══ -->
+          <div class="content-card" *ngIf="sectionActive === 'favoris'">
+            <div class="cc-title">❤️ Mes plats favoris</div>
+
+            <div class="empty-state" *ngIf="favoris.length === 0">
+              <div style="font-size:48px;margin-bottom:12px">❤️</div>
+              <div class="es-title">Aucun favori</div>
+              <div class="es-sub">Ajoutez vos plats préférés depuis le menu</div>
+              <button class="btn-goto" (click)="goToMenu()">🍽️ Voir le menu</button>
+            </div>
+
+            <div class="favs-grid" *ngIf="favoris.length > 0">
+              <div class="fav-card" *ngFor="let f of favoris">
+                <div class="fav-emoji">{{ f.emoji || '🍽️' }}</div>
+                <div>
+                  <div class="fav-name">{{ f.nom }}</div>
+                  <div class="fav-resto">{{ f.restaurant_nom }}</div>
+                  <div class="fav-price">{{ formaterMontant(f.prix) }}</div>
+                </div>
+                <div class="fav-heart" (click)="supprimerFavori(f)">❤️</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ ADRESSES ══ -->
+          <div class="content-card" *ngIf="sectionActive === 'adresses'">
+            <div class="cc-title">📍 Mes adresses</div>
+            <div class="addr-list">
+              <div class="addr-card" *ngFor="let a of adresses"
+                   [class.selected]="a.defaut">
+                <div class="addr-icon">{{ a.icon }}</div>
+                <div>
+                  <div class="addr-name">{{ a.nom }}</div>
+                  <div class="addr-detail">{{ a.detail }}</div>
+                  <span class="addr-default" *ngIf="a.defaut">Par défaut</span>
+                </div>
+                <div class="addr-actions">
+                  <div class="addr-btn">✏️</div>
+                  <div class="addr-btn" (click)="supprimerAdresse(a)">🗑</div>
+                </div>
+              </div>
+            </div>
+            <button class="btn-add-addr" (click)="ajouterAdresse()">
+              + Ajouter une adresse
+            </button>
+          </div>
+
+          <!-- ══ PAIEMENTS ══ -->
+          <div class="content-card" *ngIf="sectionActive === 'paiements'">
+            <div class="cc-title">💳 Mes moyens de paiement</div>
+            <div class="pay-list">
+              <div class="pay-card" *ngFor="let p of paiements"
+                   [class.selected]="p.defaut">
+                <div class="pay-emoji">{{ p.emoji }}</div>
+                <div>
+                  <div class="pay-name">{{ p.nom }}</div>
+                  <div class="pay-detail">{{ p.detail }}</div>
+                </div>
+                <span class="pay-default" *ngIf="p.defaut">Par défaut</span>
+                <button class="pay-del" *ngIf="!p.defaut">🗑</button>
+              </div>
+            </div>
+            <div class="pay-info">
+              💡 Les paiements Wave et Orange Money se font directement lors de la commande.
+            </div>
+          </div>
+
+          <!-- ══ SÉCURITÉ ══ -->
+          <div class="content-card" *ngIf="sectionActive === 'securite'">
+            <div class="cc-title">🔒 Sécurité du compte</div>
+
+            <div class="alert-success" *ngIf="successMdp">✅ {{ successMdp }}</div>
+            <div class="alert-error" *ngIf="erreurMdp">⚠️ {{ erreurMdp }}</div>
+
+            <div class="form-group">
+              <label class="form-label">Mot de passe actuel</label>
+              <input class="form-input" type="password" [(ngModel)]="ancienMdp"
+                     placeholder="••••••••">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nouveau mot de passe</label>
+              <input class="form-input" type="password" [(ngModel)]="nouveauMdp"
+                     placeholder="Min. 8 caractères">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirmer le mot de passe</label>
+              <input class="form-input" type="password" [(ngModel)]="confirmerMdp"
+                     placeholder="Répétez le nouveau mot de passe">
+            </div>
+            <button class="btn-save-mdp" (click)="changerMotDePasse()">
+              🔑 Changer le mot de passe
+            </button>
+
+            <div class="security-info">
+              <div class="si-item">
+                <span class="si-icon">✅</span>
+                <div>
+                  <div class="si-name">Email vérifié</div>
+                  <div class="si-val">{{ utilisateur?.email }}</div>
+                </div>
+              </div>
+              <div class="si-item">
+                <span class="si-icon">📱</span>
+                <div>
+                  <div class="si-name">Téléphone</div>
+                  <div class="si-val">{{ utilisateur?.telephone || 'Non renseigné' }}</div>
+                </div>
+              </div>
+              <div class="si-item">
+                <span class="si-icon">📅</span>
+                <div>
+                  <div class="si-name">Membre depuis</div>
+                  <div class="si-val">{{ utilisateur?.created_at | date:'MMMM yyyy' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="footer-links">
+        <a (click)="goToAccueil()">Accueil</a>
+        <a (click)="goToMenu()">Menu</a>
+        <a (click)="goToPanier()">Panier</a>
+      </div>
+      <div class="footer-copy">© 2026 QuickBite SN · Dakar, Sénégal</div>
+    </div>
+  </footer>
+
+</div>

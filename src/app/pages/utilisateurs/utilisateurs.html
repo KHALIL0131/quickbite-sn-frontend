@@ -1,0 +1,305 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item" (click)="naviguer('commandes')"><span class="nav-icon">📋</span>Commandes</a>
+      <a class="nav-item" (click)="naviguer('menu')"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item" (click)="naviguer('notifications')"><span class="nav-icon">🔔</span>Notifications</a>
+
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item active"><span class="nav-icon">👥</span>Utilisateurs</a>
+      <a class="nav-item" (click)="naviguer('livreurs')"><span class="nav-icon">🛵</span>Livreurs</a>
+      <a class="nav-item" (click)="naviguer('finances')"><span class="nav-icon">💰</span>Finances</a>
+      <a class="nav-item" (click)="naviguer('zones')"><span class="nav-icon">📍</span>Zones livraison</a>
+
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item" (click)="naviguer('statistiques')"><span class="nav-icon">📈</span>Statistiques</a>
+      <a class="nav-item" (click)="naviguer('avis')"><span class="nav-icon">⭐</span>Avis clients</a>
+      <a class="nav-item" (click)="naviguer('rapports')"><span class="nav-icon">📄</span>Rapports PDF</a>
+
+      <div class="nav-section">Système</div>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span>Paramètres</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>Déconnexion</a>
+    </div>
+
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Utilisateurs 👥</div>
+        <div class="ph-sub">Gérez les clients, livreurs et administrateurs</div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-sm" (click)="exporterPDF()">📄 Exporter PDF</button>
+        <button class="btn-sm" (click)="exporterExcel()">📊 Exporter Excel</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-mini">
+        <div class="sm-val" style="color:#FFFFFF">{{ stats.total }}</div>
+        <div class="sm-lbl">Total utilisateurs</div>
+        <div class="sm-delta">↑ Tous rôles</div>
+      </div>
+      <div class="stat-mini">
+        <div class="sm-val" style="color:#2563EB">{{ stats.clients }}</div>
+        <div class="sm-lbl">Clients</div>
+        <div class="sm-delta">↑ Comptes actifs</div>
+      </div>
+      <div class="stat-mini">
+        <div class="sm-val" style="color:#FFD700">{{ stats.livreurs }}</div>
+        <div class="sm-lbl">Livreurs actifs</div>
+        <div class="sm-delta">↑ En service</div>
+      </div>
+      <div class="stat-mini">
+        <div class="sm-val" style="color:#E74C3C">{{ stats.bloques }}</div>
+        <div class="sm-lbl">Bloqués</div>
+        <div class="sm-delta" style="color:#6B8F77">→ Suspendu</div>
+      </div>
+    </div>
+
+    <!-- ROLE TABS -->
+    <div class="role-tabs">
+      <div class="rtab" [class.active]="ongletActif === 'tous'" (click)="changerOnglet('tous')">
+        Tous ({{ stats.total }})
+      </div>
+      <div class="rtab" [class.active]="ongletActif === 'clients'" (click)="changerOnglet('clients')">
+        🛒 Clients ({{ stats.clients }})
+      </div>
+      <div class="rtab" [class.active]="ongletActif === 'livreurs'" (click)="changerOnglet('livreurs')">
+        🛵 Livreurs ({{ stats.livreurs }})
+      </div>
+      <div class="rtab" [class.active]="ongletActif === 'admins'" (click)="changerOnglet('admins')">
+        ⚙️ Admins ({{ stats.admins }})
+      </div>
+      <div class="rtab" [class.active]="ongletActif === 'bloques'" (click)="changerOnglet('bloques')">
+        🚫 Bloqués ({{ stats.bloques }})
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="text" placeholder="Rechercher par nom, email, téléphone..."
+               [(ngModel)]="searchQuery" (input)="filtrer()">
+      </div>
+      <select class="filter-select" [(ngModel)]="filtreStatut" (change)="filtrer()">
+        <option value="">Tous les statuts</option>
+        <option value="actif">Actif</option>
+        <option value="bloque">Bloqué</option>
+      </select>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des utilisateurs...</span>
+    </div>
+
+    <!-- GRILLE -->
+    <div class="users-grid" *ngIf="!loading">
+
+      <div class="empty-full" *ngIf="utilisateursFiltres.length === 0">
+        <div style="font-size:48px;margin-bottom:12px">👥</div>
+        <div style="font-size:16px;font-weight:700;color:#FFFFFF;margin-bottom:6px">Aucun utilisateur</div>
+        <div style="font-size:13px;color:#6B8F77">Aucun résultat</div>
+      </div>
+
+      <div class="user-card"
+           *ngFor="let u of utilisateursPagines; let i = index"
+           [class.blocked]="!u.est_actif">
+
+        <div class="uc-header">
+          <div class="uc-avatar" [style.background]="getAvatarGradient(i)">
+            {{ getInitiales(u) }}
+          </div>
+          <div class="uc-info">
+            <div class="uc-name">{{ u.prenom }} {{ u.nom }}</div>
+            <div class="uc-email">{{ u.email }}</div>
+            <div class="uc-email">{{ u.telephone }}</div>
+            <span class="uc-role" [ngClass]="getRoleClass(u.role, u.est_actif)">
+              {{ getRoleLabel(u.role, u.est_actif) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="uc-stats">
+          <div class="uc-stat">
+            <div class="ucs-val" style="color:#F5A623">{{ u.ville || 'Dakar' }}</div>
+            <div class="ucs-lbl">Ville</div>
+          </div>
+          <div class="uc-stat">
+            <div class="ucs-val" style="color:#22A86A">{{ u.est_verifie ? '✅' : '❌' }}</div>
+            <div class="ucs-lbl">Vérifié</div>
+          </div>
+          <div class="uc-stat">
+            <div class="ucs-val" style="color:#FFD700">{{ u.est_actif ? '✅' : '🚫' }}</div>
+            <div class="ucs-lbl">Actif</div>
+          </div>
+        </div>
+
+        <div class="uc-footer">
+          <div class="uc-status">
+            <div class="ud" [ngClass]="u.est_actif ? 'ud-online' : 'ud-blocked'"></div>
+            <span [style.color]="u.est_actif ? '#22A86A' : '#E74C3C'">
+              {{ u.est_actif ? 'Actif' : 'Bloqué' }}
+            </span>
+          </div>
+          <div class="uc-actions">
+            <div class="uca" title="Voir le profil" (click)="voirProfil(u)">👁</div>
+            <div class="uca"
+                 [title]="u.est_actif ? 'Bloquer' : 'Débloquer'"
+                 [style.color]="u.est_actif ? '#E74C3C' : '#22A86A'"
+                 (click)="toggleActif(u)">
+              {{ u.est_actif ? '🚫' : '✅' }}
+            </div>
+            <div class="uca" title="Supprimer" style="color:#E74C3C"
+                 (click)="confirmerSuppression(u)">🗑</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="add-user-card" *ngIf="utilisateursFiltres.length > 0">
+        <div class="add-inner">
+          <div class="ai-icon">➕</div>
+          <div class="ai-text">Inviter un utilisateur</div>
+          <div class="ai-sub">Client, livreur ou admin</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <div class="pg-info">
+        Affichage {{ (page-1)*parPage+1 }}–{{ page*parPage > utilisateursFiltres.length ? utilisateursFiltres.length : page*parPage }}
+        sur {{ utilisateursFiltres.length }}
+      </div>
+      <button class="pb" (click)="changerPage(page-1)" [disabled]="page === 1">←</button>
+      <button class="pb" *ngFor="let p of pages" [class.active]="p === page" (click)="changerPage(p)">{{ p }}</button>
+      <button class="pb" (click)="changerPage(page+1)" [disabled]="page === totalPages">→</button>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+  <!-- MODAL PROFIL -->
+  <div class="modal-overlay" [class.show]="showProfil"
+       (click)="$event.target === $event.currentTarget && fermerProfil()">
+    <div class="modal-profil" *ngIf="userSelectionne">
+      <div class="modal-header">
+        <div class="modal-title">👤 Profil utilisateur</div>
+        <button class="modal-close" (click)="fermerProfil()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="profil-avatar-row">
+          <div class="profil-avatar" [style.background]="getAvatarGradient(0)">
+            {{ getInitiales(userSelectionne) }}
+          </div>
+          <div>
+            <div class="profil-name">{{ userSelectionne.prenom }} {{ userSelectionne.nom }}</div>
+            <span class="uc-role" [ngClass]="getRoleClass(userSelectionne.role, userSelectionne.est_actif)">
+              {{ getRoleLabel(userSelectionne.role, userSelectionne.est_actif) }}
+            </span>
+          </div>
+        </div>
+        <div class="profil-infos">
+          <div class="profil-row">
+            <span class="profil-lbl">📧 Email</span>
+            <span class="profil-val">{{ userSelectionne.email }}</span>
+          </div>
+          <div class="profil-row">
+            <span class="profil-lbl">📞 Téléphone</span>
+            <span class="profil-val">{{ userSelectionne.telephone || '—' }}</span>
+          </div>
+          <div class="profil-row">
+            <span class="profil-lbl">📍 Ville</span>
+            <span class="profil-val">{{ userSelectionne.ville || 'Dakar' }}</span>
+          </div>
+          <div class="profil-row">
+            <span class="profil-lbl">✅ Vérifié</span>
+            <span class="profil-val">{{ userSelectionne.est_verifie ? 'Oui' : 'Non' }}</span>
+          </div>
+          <div class="profil-row">
+            <span class="profil-lbl">🔒 Statut</span>
+            <span class="profil-val" [style.color]="userSelectionne.est_actif ? '#22A86A' : '#E74C3C'">
+              {{ userSelectionne.est_actif ? 'Actif' : 'Bloqué' }}
+            </span>
+          </div>
+          <div class="profil-row">
+            <span class="profil-lbl">📅 Inscription</span>
+            <span class="profil-val">{{ userSelectionne.created_at | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="fermerProfil()">Fermer</button>
+        <button class="btn-action-block" (click)="toggleActif(userSelectionne); fermerProfil()">
+          {{ userSelectionne.est_actif ? '🚫 Bloquer' : '✅ Débloquer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRMATION SUPPRESSION -->
+  <div class="modal-overlay" [class.show]="showConfirmSuppr"
+       (click)="$event.target === $event.currentTarget && annulerSuppression()">
+    <div class="modal-confirm" *ngIf="userASupprimer">
+      <div class="confirm-icon">🗑️</div>
+      <div class="confirm-title">Supprimer cet utilisateur ?</div>
+      <div class="confirm-sub">
+        <strong>{{ userASupprimer.prenom }} {{ userASupprimer.nom }}</strong><br>
+        Cette action est irréversible.
+      </div>
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="annulerSuppression()">Annuler</button>
+        <button class="btn-delete" (click)="supprimerUser()">🗑 Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+</div>

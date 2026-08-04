@@ -1,1 +1,40 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+:root {
+  --green-deep: #0D2B1E;
+  --green-mid: #144D35;
+  --green-bright: #1A6B46;
+  --green-glow: #22A86A;
+  --orange: #F5A623;
+  --orange-deep: #E08B10;
+  --yellow: #FFD700;
+  --blue-deep: #0A1628;
+  --blue-mid: #112240;
+  --blue-glow: #2563EB;
+  --white: #FFFFFF;
+  --text-main: #E8F5EE;
+  --text-soft: #A8C4B0;
+  --text-muted: #6B8F77;
+  --border: rgba(34, 168, 106, 0.15);
+  --card-bg: rgba(20, 77, 53, 0.25);
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  background-color: var(--green-deep);
+  color: var(--text-main);
+}
+
+body {
+  background: var(--green-deep);
+}

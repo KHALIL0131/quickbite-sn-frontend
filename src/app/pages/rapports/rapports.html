@@ -1,0 +1,250 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item" (click)="naviguer('commandes')"><span class="nav-icon">📋</span>Commandes</a>
+      <a class="nav-item" (click)="naviguer('menu')"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item" (click)="naviguer('notifications')"><span class="nav-icon">🔔</span>Notifications</a>
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" (click)="naviguer('utilisateurs')"><span class="nav-icon">👥</span>Utilisateurs</a>
+      <a class="nav-item" (click)="naviguer('livreurs')"><span class="nav-icon">🛵</span>Livreurs</a>
+      <a class="nav-item" (click)="naviguer('finances')"><span class="nav-icon">💰</span>Finances</a>
+      <a class="nav-item" (click)="naviguer('zones')"><span class="nav-icon">📍</span>Zones livraison</a>
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item" (click)="naviguer('statistiques')"><span class="nav-icon">📈</span>Statistiques</a>
+      <a class="nav-item" (click)="naviguer('avis')"><span class="nav-icon">⭐</span>Avis clients</a>
+      <a class="nav-item active"><span class="nav-icon">📄</span>Rapports PDF</a>
+      <div class="nav-section">Système</div>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span>Paramètres</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>Déconnexion</a>
+    </div>
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Rapports & Exports 📄</div>
+        <div class="ph-sub">Générez de vrais rapports PDF, Excel et CSV à la demande</div>
+      </div>
+    </div>
+
+    <!-- KPI RAPIDES -->
+    <div class="stats-row">
+      <div class="sc">
+        <div class="sc-val" style="color:#FFFFFF">{{ kpis.commandes }}</div>
+        <div class="sc-lbl">Commandes</div>
+      </div>
+      <div class="sc">
+        <div class="sc-val" style="color:#F5A623">{{ formaterMontant(kpis.revenus) }}</div>
+        <div class="sc-lbl">Revenus livrés</div>
+      </div>
+      <div class="sc">
+        <div class="sc-val" style="color:#22A86A">{{ kpis.plats }}</div>
+        <div class="sc-lbl">Plats au catalogue</div>
+      </div>
+      <div class="sc">
+        <div class="sc-val" style="color:#FFD700">{{ kpis.utilisateurs.clients }}</div>
+        <div class="sc-lbl">Clients inscrits</div>
+      </div>
+    </div>
+
+    <!-- GÉNÉRATION -->
+    <div class="gen-card">
+      <div class="gen-left">
+        <div class="gc-title">Générer un rapport</div>
+        <div class="gc-sub">Choisissez le type de rapport à exporter</div>
+        <div class="gen-options">
+
+          <div class="gen-opt" [class.selected]="typeRapport === 'revenus'"
+               (click)="typeRapport = 'revenus'">
+            <div class="go-radio"></div>
+            <div class="go-icon">📊</div>
+            <div>
+              <div class="go-name">Rapport de revenus</div>
+              <div class="go-desc">Chiffre d'affaires, commissions, net</div>
+            </div>
+          </div>
+
+          <div class="gen-opt" [class.selected]="typeRapport === 'commandes'"
+               (click)="typeRapport = 'commandes'">
+            <div class="go-radio"></div>
+            <div class="go-icon">📦</div>
+            <div>
+              <div class="go-name">Rapport commandes</div>
+              <div class="go-desc">Toutes les commandes avec détails</div>
+            </div>
+          </div>
+
+          <div class="gen-opt" [class.selected]="typeRapport === 'menu'"
+               (click)="typeRapport = 'menu'">
+            <div class="go-radio"></div>
+            <div class="go-icon">🍽️</div>
+            <div>
+              <div class="go-name">Performance menu</div>
+              <div class="go-desc">Ventes par plat, top vendeurs</div>
+            </div>
+          </div>
+
+          <div class="gen-opt" [class.selected]="typeRapport === 'synthese'"
+               (click)="typeRapport = 'synthese'">
+            <div class="go-radio"></div>
+            <div class="go-icon">📈</div>
+            <div>
+              <div class="go-name">Synthèse globale</div>
+              <div class="go-desc">Tous les indicateurs de la plateforme</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="gen-right">
+        <div>
+          <label class="gr-label">Format d'export</label>
+          <select class="form-input" [(ngModel)]="formatExport">
+            <option value="pdf">📄 PDF (rapport complet)</option>
+            <option value="excel">📊 Excel (.xlsx)</option>
+            <option value="csv">📋 CSV (données brutes)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="gr-label">Période</label>
+          <div class="date-row">
+            <input class="form-input" type="date" [(ngModel)]="dateDebut">
+            <input class="form-input" type="date" [(ngModel)]="dateFin">
+          </div>
+        </div>
+
+        <div>
+          <label class="gr-label">Raccourcis de période</label>
+          <div class="periode-btns">
+            <button class="pb-btn" (click)="setPeriode(7)">7 jours</button>
+            <button class="pb-btn" (click)="setPeriode(30)">30 jours</button>
+            <button class="pb-btn" (click)="setPeriode(90)">3 mois</button>
+            <button class="pb-btn" (click)="setPeriode(365)">1 an</button>
+          </div>
+        </div>
+
+        <div class="recap-box">
+          <div class="rb-row">
+            <span>Type</span>
+            <strong>{{ getTypeLabel(typeRapport) }}</strong>
+          </div>
+          <div class="rb-row">
+            <span>Format</span>
+            <strong>{{ getFormatLabel(formatExport) }}</strong>
+          </div>
+          <div class="rb-row">
+            <span>Données disponibles</span>
+            <strong>{{ commandes.length }} commande(s)</strong>
+          </div>
+        </div>
+
+        <button class="btn-gen" (click)="genererRapport()" [disabled]="loading">
+          <span *ngIf="!loading">📄 Générer le rapport {{ getFormatLabel(formatExport) }}</span>
+          <span *ngIf="loading">⏳ Génération en cours...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- RACCOURCIS -->
+    <div class="section-title">Génération rapide</div>
+    <div class="quick-grid">
+      <div class="quick-card" (click)="genererRapide('revenus', 'pdf')">
+        <div class="qc-icon">📄</div>
+        <div class="qc-name">Revenus en PDF</div>
+        <div class="qc-desc">Rapport financier prêt à imprimer</div>
+      </div>
+      <div class="quick-card" (click)="genererRapide('commandes', 'excel')">
+        <div class="qc-icon">📊</div>
+        <div class="qc-name">Commandes en Excel</div>
+        <div class="qc-desc">Tableur avec feuille de synthèse</div>
+      </div>
+      <div class="quick-card" (click)="genererRapide('menu', 'pdf')">
+        <div class="qc-icon">🍽️</div>
+        <div class="qc-name">Top plats en PDF</div>
+        <div class="qc-desc">Classement des meilleures ventes</div>
+      </div>
+      <div class="quick-card" (click)="genererRapide('synthese', 'excel')">
+        <div class="qc-icon">📈</div>
+        <div class="qc-name">Synthèse en Excel</div>
+        <div class="qc-desc">Tous les indicateurs clés</div>
+      </div>
+    </div>
+
+    <!-- RAPPORTS RÉCENTS -->
+    <div class="section-title">Rapports récents</div>
+
+    <div class="empty-reports" *ngIf="rapportsRecents.length === 0">
+      <div style="font-size:44px;margin-bottom:12px">📄</div>
+      <div style="font-size:15px;color:#FFFFFF;font-weight:700;margin-bottom:6px">
+        Aucun rapport généré
+      </div>
+      <div style="font-size:13px;color:#6B8F77">
+        Vos rapports apparaîtront ici après génération
+      </div>
+    </div>
+
+    <div class="reports-grid" *ngIf="rapportsRecents.length > 0">
+      <div class="report-card" *ngFor="let r of rapportsRecents">
+        <div class="rc-header">
+          <div class="rc-icon" [ngClass]="r.iconeClass">{{ r.icone }}</div>
+          <div class="rc-info">
+            <div class="rc-name">{{ r.nom }}</div>
+            <div class="rc-date">{{ r.periode }}</div>
+            <div class="rc-size">{{ r.taille }} · {{ r.date }}</div>
+          </div>
+          <span class="rc-type" [ngClass]="r.formatClass">{{ r.format }}</span>
+        </div>
+        <div class="rc-actions">
+          <div class="rc-btn dl" (click)="telechargerRapport(r)">⬇️ Re-télécharger</div>
+          <div class="rc-btn" (click)="supprimerRapport(r)">🗑</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

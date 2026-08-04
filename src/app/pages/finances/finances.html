@@ -1,0 +1,206 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item" (click)="naviguer('commandes')"><span class="nav-icon">📋</span>Commandes</a>
+      <a class="nav-item" (click)="naviguer('menu')"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item" (click)="naviguer('notifications')"><span class="nav-icon">🔔</span>Notifications</a>
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" (click)="naviguer('utilisateurs')"><span class="nav-icon">👥</span>Utilisateurs</a>
+      <a class="nav-item" (click)="naviguer('livreurs')"><span class="nav-icon">🛵</span>Livreurs</a>
+      <a class="nav-item active"><span class="nav-icon">💰</span>Finances</a>
+      <a class="nav-item" (click)="naviguer('zones')"><span class="nav-icon">📍</span>Zones livraison</a>
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item" (click)="naviguer('statistiques')"><span class="nav-icon">📈</span>Statistiques</a>
+      <a class="nav-item" (click)="naviguer('avis')"><span class="nav-icon">⭐</span>Avis clients</a>
+      <a class="nav-item" (click)="naviguer('rapports')"><span class="nav-icon">📄</span>Rapports PDF</a>
+      <div class="nav-section">Système</div>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span>Paramètres</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>Déconnexion</a>
+    </div>
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Finances 💰</div>
+        <div class="ph-sub">Solde, transactions et retraits · {{ admin?.prenom }} {{ admin?.nom }}</div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-sm">📄 Relevé PDF</button>
+        <button class="btn-sm" (click)="exporterPDF()">Export PDF</button>
+        <button class="btn-sm" (click)="exporterExcel()">📊 Export Excel</button>
+        <button class="btn-green">💸 Retirer les fonds</button>
+      </div>
+    </div>
+
+    <!-- BALANCE CARDS -->
+    <div class="balance-grid">
+      <div class="balance-card bc-main">
+        <div class="bc-label">💰 Solde disponible</div>
+        <div class="bc-amount" style="color:#FFD700">{{ formaterMontant(soldes.disponible) }}</div>
+        <div class="bc-sub">Prêt pour retrait · Wave ou Orange Money</div>
+        <button class="bc-btn">💸 Retirer maintenant</button>
+      </div>
+      <div class="balance-card bc-pending">
+        <div class="bc-label">⏳ En attente</div>
+        <div class="bc-amount" style="color:#F5A623">{{ formaterMontant(soldes.enAttente) }}</div>
+        <div class="bc-sub">Commandes en cours de livraison</div>
+        <button class="bc-btn bc-btn-orange">Voir le détail</button>
+      </div>
+      <div class="balance-card bc-withdraw">
+        <div class="bc-label">📤 Total retiré ce mois</div>
+        <div class="bc-amount" style="color:#2563EB">{{ formaterMontant(soldes.totalRetire) }}</div>
+        <div class="bc-sub">Retraits effectués · Délai 24h</div>
+        <button class="bc-btn bc-btn-blue">Historique retraits</button>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="ch-title">Revenus vs Commissions QuickBite (8%)</div>
+        <canvas id="revenueChart" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="ch-title">Répartition des paiements</div>
+        <canvas id="payChart" height="160"></canvas>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="table-card">
+      <div class="table-title">Transactions récentes</div>
+
+      <div class="table-toolbar">
+        <input class="search-input"
+               placeholder="🔍 Rechercher une transaction..."
+               [(ngModel)]="searchQuery"
+               (input)="filtrer()">
+        <select class="filter-sel" [(ngModel)]="filtreType" (change)="filtrer()">
+          <option value="">Tous les types</option>
+          <option value="entree">Entrées</option>
+          <option value="sortie">Sorties</option>
+          <option value="attente">En attente</option>
+        </select>
+        <select class="filter-sel" [(ngModel)]="filtrePaiement" (change)="filtrer()">
+          <option value="">Tous les paiements</option>
+          <option value="wave">Wave</option>
+          <option value="orange_money">Orange Money</option>
+          <option value="carte">Carte</option>
+          <option value="especes">Espèces</option>
+        </select>
+      </div>
+
+      <!-- LOADING -->
+      <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Chargement des transactions...</span>
+      </div>
+
+      <!-- EMPTY -->
+      <div class="empty-state" *ngIf="!loading && transactionsFiltrees.length === 0">
+        <div style="font-size:48px;margin-bottom:12px">💰</div>
+        <div style="font-size:16px;font-weight:700;color:#FFFFFF;margin-bottom:6px">Aucune transaction</div>
+        <div style="font-size:13px;color:#6B8F77">Les transactions apparaîtront ici</div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-scroll" *ngIf="!loading && transactionsFiltrees.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Description</th>
+              <th>Paiement</th>
+              <th>Montant brut</th>
+              <th>Commission (8%)</th>
+              <th>Net reçu</th>
+              <th>Type</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of transactionsPaginees">
+              <td class="td-muted">{{ t.id }}</td>
+              <td>{{ t.description }}</td>
+              <td>
+                <span class="pay-icon">{{ getPaiementIcon(t.paiement) }}</span>
+                {{ t.paiement }}
+              </td>
+              <td>{{ formaterMontant(t.montant_brut) }}</td>
+              <td class="td-red">−{{ formaterMontant(t.commission) }}</td>
+              <td>
+                <span [class]="t.type === 'entree' ? 'amount-pos' : 'amount-neg'">
+                  {{ t.type === 'entree' ? '+' : '−' }}{{ formaterMontant(t.net) }}
+                </span>
+              </td>
+              <td>
+                <span class="tx-type" [ngClass]="getTypeClass(t.type)">
+                  {{ getTypeLabel(t.type) }}
+                </span>
+              </td>
+              <td class="td-muted">{{ t.date | date:'dd/MM · HH:mm' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <div class="pg-info">
+          Affichage {{ (page-1)*parPage+1 }}–{{ page*parPage > transactionsFiltrees.length ? transactionsFiltrees.length : page*parPage }}
+          sur {{ transactionsFiltrees.length }} transactions
+        </div>
+        <button class="pb" (click)="changerPage(page-1)" [disabled]="page === 1">←</button>
+        <button class="pb" *ngFor="let p of pages"
+                [class.active]="p === page"
+                (click)="changerPage(p)">{{ p }}</button>
+        <button class="pb" (click)="changerPage(page+1)" [disabled]="page === totalPages">→</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+</div>

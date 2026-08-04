@@ -1,0 +1,129 @@
+<div class="confirm-wrap">
+
+  <!-- CONFETTIS -->
+  <div class="confetti-wrap" id="confettiWrap"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo" (click)="goToAccueil()">
+      <div class="logo-icon">🍔</div>
+      <div class="logo-text">Quick<span>Bite</span> SN</div>
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn" (click)="goToMenu()">🍽️ Menu</button>
+      <button class="nav-btn" (click)="goToHistorique()">📋 Commandes</button>
+    </div>
+  </nav>
+
+  <!-- LOADING -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Chargement...</span>
+  </div>
+
+  <!-- CARTE PRINCIPALE -->
+  <div class="confirm-card" *ngIf="!loading">
+
+    <!-- CHECKMARK ANIMÉ -->
+    <div class="check-ring">
+      <div class="check-emoji">✅</div>
+    </div>
+
+    <!-- TITRE -->
+    <div class="confirm-title">Commande <em>confirmée !</em></div>
+    <div class="confirm-sub">
+      {{ commande ? 'Votre paiement a été accepté · Votre repas est en préparation 🍔'
+         : 'Votre commande a été passée avec succès !' }}
+    </div>
+
+    <!-- NUMÉRO COMMANDE -->
+    <div class="order-ref" *ngIf="commande">
+      <div class="or-label">Numéro de commande</div>
+      <div class="or-num">#{{ commande.numero }}</div>
+      <div class="or-date">
+        📅 {{ commande.created_at | date:'EEEE dd MMMM yyyy · HH:mm' }} ·
+        {{ commande.mode_paiement }} ✓
+      </div>
+    </div>
+
+    <div class="order-ref" *ngIf="!commande">
+      <div class="or-label">Statut</div>
+      <div class="or-num" style="color:#22A86A">✅ Confirmée</div>
+      <div class="or-date">Votre commande est en cours de traitement</div>
+    </div>
+
+    <!-- DÉTAILS ARTICLES -->
+    <div class="confirm-details" *ngIf="commande?.details?.length > 0">
+      <div class="cd-row" *ngFor="let d of commande.details">
+        <span class="cd-lbl">{{ d.quantite }}× {{ d.plat_nom }}</span>
+        <span class="cd-val">{{ formaterMontant(d.prix_unitaire * d.quantite) }}</span>
+      </div>
+      <div class="cd-row" *ngIf="commande.reduction > 0">
+        <span class="cd-lbl">Code {{ commande.code_promo }}</span>
+        <span class="cd-green">−{{ formaterMontant(commande.reduction) }}</span>
+      </div>
+      <div class="cd-row">
+        <span class="cd-lbl">Livraison</span>
+        <span class="cd-green">
+          {{ commande.frais_livraison > 0 ? formaterMontant(commande.frais_livraison) : 'Gratuite' }}
+        </span>
+      </div>
+      <div class="cd-row total">
+        <span class="cd-lbl">Total payé</span>
+        <span class="cd-val orange">{{ formaterMontant(commande.montant_total) }}</span>
+      </div>
+    </div>
+
+    <!-- ETA CARD -->
+    <div class="eta-card">
+      <div class="eta-icon">🛵</div>
+      <div class="eta-info">
+        <div class="eta-time">~30 min</div>
+        <div class="eta-desc">
+          {{ commande?.restaurant_nom || 'Restaurant' }} · Livreur assigné
+        </div>
+        <div class="eta-bar">
+          <div class="eta-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+      <button class="btn-track" (click)="goToSuivi()">
+        📍 Suivre ma commande en direct
+      </button>
+      <button class="btn-home" (click)="goToAccueil()">
+        🏠 Retour à l'accueil
+      </button>
+    </div>
+
+    <!-- SÉCURITÉ -->
+    <div class="security-row">
+      <div class="sr-item">
+        <div class="sr-dot"></div>
+        Paiement sécurisé SSL
+      </div>
+      <div class="sr-item">
+        <div class="sr-dot"></div>
+        Reçu envoyé par email
+      </div>
+      <div class="sr-item">
+        <div class="sr-dot"></div>
+        Support 24/7
+      </div>
+    </div>
+
+    <!-- PARTAGE -->
+    <div class="share-section">
+      <div class="share-label">Partagez votre expérience</div>
+      <div class="share-btns">
+        <button class="share-btn" (click)="partagerFacebook()">📘 Facebook</button>
+        <button class="share-btn" (click)="partagerWhatsApp()">💬 WhatsApp</button>
+        <button class="share-btn" (click)="goToMenu()">🍽️ Commander encore</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

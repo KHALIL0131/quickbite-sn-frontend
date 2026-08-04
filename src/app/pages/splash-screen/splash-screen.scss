@@ -1,0 +1,196 @@
+.splash-container {
+  position: fixed;
+  inset: 0;
+  background: #0D2B1E;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bg-rings {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(34, 168, 106, 0.15);
+  animation: ringPulse 4s ease-in-out infinite;
+
+  &:nth-child(1) { width: 200px; height: 200px; animation-delay: 0s; }
+  &:nth-child(2) { width: 350px; height: 350px; animation-delay: 0.5s; }
+  &:nth-child(3) { width: 500px; height: 500px; animation-delay: 1s; }
+  &:nth-child(4) { width: 650px; height: 650px; animation-delay: 1.5s; border-color: rgba(245, 166, 35, 0.08); }
+}
+
+@keyframes ringPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.06); opacity: 0.5; }
+}
+
+.splash-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.logo-wrap {
+  margin-bottom: 8px;
+}
+
+.logo-box {
+  width: 110px;
+  height: 110px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #F5A623, #FFD700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(245, 166, 35, 0.4);
+  animation: logoGlow 3s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+  0%, 100% { box-shadow: 0 8px 32px rgba(245, 166, 35, 0.4); }
+  50% { box-shadow: 0 16px 48px rgba(245, 166, 35, 0.7); }
+}
+
+.logo-emoji {
+  font-size: 56px;
+  animation: logoBounce 2s ease-in-out infinite;
+}
+
+@keyframes logoBounce {
+  0%, 100% { transform: scale(1) rotate(-5deg); }
+  50% { transform: scale(1.1) rotate(5deg); }
+}
+
+.app-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: -1px;
+  animation: fadeInDown 0.8s ease both;
+
+  span { color: #F5A623; }
+}
+
+.app-tagline {
+  font-size: 16px;
+  color: #A8C4B0;
+  animation: fadeInDown 0.8s ease 0.2s both;
+}
+
+.app-location {
+  font-size: 13px;
+  color: #6B8F77;
+  animation: fadeInDown 0.8s ease 0.3s both;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.progress-wrap {
+  width: 280px;
+  margin-top: 16px;
+  animation: fadeIn 0.8s ease 0.5s both;
+}
+
+.progress-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #22A86A, #FFD700, #F5A623);
+  animation: progressMove 2.5s ease forwards;
+}
+
+@keyframes progressMove {
+  0% { width: 0; }
+  20% { width: 20%; }
+  50% { width: 60%; }
+  80% { width: 85%; }
+  100% { width: 100%; }
+}
+
+.progress-label {
+  font-size: 12px;
+  color: #6B8F77;
+  text-align: center;
+  min-height: 18px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.loading-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22A86A;
+  animation: dotPulse 1.4s ease-in-out infinite;
+
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.4s; }
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.features-strip {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+  animation: fadeIn 0.8s ease 1s both;
+}
+
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+
+  span { font-size: 22px; }
+  small { font-size: 10px; color: #6B8F77; font-weight: 600; }
+}
+
+.version-info {
+  position: fixed;
+  bottom: 24px;
+  font-size: 12px;
+  color: #6B8F77;
+  animation: fadeIn 1s ease 1s both;
+  z-index: 1;
+
+  strong { color: #A8C4B0; }
+}

@@ -1,0 +1,639 @@
+<div class="page-wrap">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="fermerSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <button class="btn-close-sidebar" (click)="fermerSidebar()">✕ Fermer</button>
+    <div class="sb-header">
+      <div class="sb-logo-row">
+        <div class="logo-icon">🍔</div>
+        <div class="logo-text">Quick<span>Bite</span> SN</div>
+      </div>
+      <div class="sb-role">⚙️ Administration</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" (click)="naviguer('dashboard')"><span class="nav-icon">📊</span>Dashboard</a>
+      <a class="nav-item" (click)="naviguer('commandes')"><span class="nav-icon">📋</span>Commandes</a>
+      <a class="nav-item active"><span class="nav-icon">🍽️</span>Menu</a>
+      <a class="nav-item" (click)="naviguer('notifications')"><span class="nav-icon">🔔</span>Notifications</a>
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" (click)="naviguer('utilisateurs')"><span class="nav-icon">👥</span>Utilisateurs</a>
+      <a class="nav-item" (click)="naviguer('livreurs')"><span class="nav-icon">🛵</span>Livreurs</a>
+      <a class="nav-item" (click)="naviguer('finances')"><span class="nav-icon">💰</span>Finances</a>
+      <a class="nav-item" (click)="naviguer('zones')"><span class="nav-icon">📍</span>Zones livraison</a>
+      <div class="nav-section">Analytique</div>
+      <a class="nav-item" (click)="naviguer('statistiques')"><span class="nav-icon">📈</span>Statistiques</a>
+      <a class="nav-item" (click)="naviguer('avis')"><span class="nav-icon">⭐</span>Avis clients</a>
+      <a class="nav-item" (click)="naviguer('rapports')"><span class="nav-icon">📄</span>Rapports PDF</a>
+      <div class="nav-section">Système</div>
+      <a class="nav-item" (click)="naviguer('parametres')"><span class="nav-icon">⚙️</span>Paramètres</a>
+      <a class="nav-item" (click)="deconnecter()"><span class="nav-icon">🚪</span>Déconnexion</a>
+    </div>
+    <div class="sb-footer">
+      <div class="resto-card">
+        <div class="resto-avatar">👤</div>
+        <div>
+          <div class="resto-name">{{ admin?.prenom }} {{ admin?.nom }}</div>
+          <div class="resto-status">● Admin · En ligne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="mobile-logo">
+        <div class="logo-icon-sm">🍔</div>
+        <span>Quick<span>Bite</span> SN</span>
+      </div>
+      <div class="mobile-admin-avatar">
+        {{ admin?.prenom?.charAt(0) }}{{ admin?.nom?.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="ph-title">Gestion du Menu 🍽️</div>
+        <div class="ph-sub">Gérez vos plats, restaurants, catégories et disponibilités</div>
+      </div>
+      <div class="ph-actions">
+        <button class="btn-sm" (click)="showModalRestaurant = true; erreurModal = ''">
+          🏪 Ajouter restaurant
+        </button>
+        <button class="btn-primary" (click)="showModal = true; erreurModal = ''">
+          + Ajouter un plat
+        </button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-mini">
+        <div class="sm-val" style="color:#FFFFFF">{{ stats.total }}</div>
+        <div class="sm-lbl">Plats au total</div>
+      </div>
+      <div class="stat-mini">
+        <div class="sm-val" style="color:#22A86A">{{ stats.disponibles }}</div>
+        <div class="sm-lbl">Disponibles</div>
+      </div>
+      <div class="stat-mini">
+        <div class="sm-val" style="color:#6B8F77">{{ stats.indisponibles }}</div>
+        <div class="sm-lbl">Indisponibles</div>
+      </div>
+      <div class="stat-mini">
+        <div class="sm-val" style="color:#F5A623">{{ restaurants.length }}</div>
+        <div class="sm-lbl">Restaurants</div>
+      </div>
+    </div>
+
+    <!-- ONGLETS PLATS / RESTAURANTS -->
+    <div class="onglets">
+      <button class="onglet-btn" [class.active]="ongletActif === 'plats'"
+              (click)="ongletActif = 'plats'">
+        🍽️ Plats ({{ plats.length }})
+      </button>
+      <button class="onglet-btn" [class.active]="ongletActif === 'restaurants'"
+              (click)="ongletActif = 'restaurants'">
+        🏪 Restaurants ({{ restaurants.length }})
+      </button>
+    </div>
+
+    <!-- ══ ONGLET PLATS ══ -->
+    <div *ngIf="ongletActif === 'plats'">
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="search-box">
+          <input type="text" placeholder="Rechercher un plat..."
+                 [(ngModel)]="searchQuery" (input)="filtrer()">
+        </div>
+        <div class="cat-filters">
+          <button class="cf-btn" [class.active]="categorieActive === 'Tout'"
+                  (click)="filtrerCategorie('Tout')">Tout</button>
+          <button class="cf-btn" *ngFor="let cat of categories"
+                  [class.active]="categorieActive === cat.nom"
+                  (click)="filtrerCategorie(cat.nom)">
+            {{ cat.emoji }} {{ cat.nom }}
+          </button>
+        </div>
+      </div>
+
+      <!-- LOADING PLATS -->
+      <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Chargement des plats...</span>
+      </div>
+
+      <!-- EMPTY PLATS -->
+      <div class="empty-state" *ngIf="!loading && platsFiltres.length === 0">
+        <div style="font-size:64px;margin-bottom:16px">🍽️</div>
+        <div style="font-size:20px;font-weight:700;color:#FFFFFF;margin-bottom:8px">Aucun plat</div>
+        <div style="font-size:14px;color:#6B8F77;margin-bottom:20px">
+          Commencez par ajouter un restaurant puis des plats
+        </div>
+        <button class="btn-primary" (click)="showModal = true">+ Ajouter un plat</button>
+      </div>
+
+      <!-- GRILLE PLATS -->
+      <div class="menu-grid" *ngIf="!loading && platsFiltres.length > 0">
+        <div class="menu-card" *ngFor="let p of platsFiltres"
+             [class.inactive]="!p.est_disponible">
+
+          <div class="menu-img">
+            <img *ngIf="p.photo" [src]="getPlatPhotoUrl(p.photo)" [alt]="p.nom" class="plat-photo">
+            <span *ngIf="!p.photo" class="plat-emoji">{{ p.emoji || '🍽️' }}</span>
+            <div class="menu-cat">{{ p.categorie_nom || 'Autre' }}</div>
+            <button class="menu-toggle"
+                    [class.mt-on]="p.est_disponible"
+                    [class.mt-off]="!p.est_disponible"
+                    (click)="toggleDisponibilite(p)">
+              {{ p.est_disponible ? '● Dispo' : '○ Indispo' }}
+            </button>
+          </div>
+
+          <div class="menu-body">
+            <div class="menu-name">{{ p.nom }}</div>
+            <div class="menu-desc">{{ p.description || 'Aucune description' }}</div>
+            <div class="menu-meta">
+              <span *ngIf="p.restaurant_nom" class="menu-resto">🏪 {{ p.restaurant_nom }}</span>
+              <span *ngIf="p.note_moyenne > 0" class="menu-note">⭐ {{ p.note_moyenne }}</span>
+            </div>
+            <div class="menu-footer">
+              <div class="menu-price">{{ p.prix | number }} F</div>
+              <div class="menu-sold">{{ p.est_populaire ? '🔥' : '' }} {{ p.nombre_commandes || 0 }} vendus</div>
+            </div>
+            <div class="menu-actions">
+              <button class="ma-btn ma-edit" (click)="ouvrirModifierPlat(p)">✏️ Modifier</button>
+              <button class="ma-btn" (click)="toggleDisponibilite(p)">
+                {{ p.est_disponible ? '○ Désact.' : '● Activer' }}
+              </button>
+              <button class="ma-btn ma-del" (click)="supprimerPlat(p)">🗑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ONGLET RESTAURANTS ══ -->
+    <div *ngIf="ongletActif === 'restaurants'">
+
+      <!-- TOOLBAR RESTOS -->
+      <div class="toolbar">
+        <div class="search-box">
+          <input type="text" placeholder="Rechercher un restaurant..."
+                 [(ngModel)]="searchResto">
+        </div>
+      </div>
+
+      <!-- LOADING RESTOS -->
+      <div class="loading-state" *ngIf="loadingRestos">
+        <div class="spinner"></div>
+        <span>Chargement des restaurants...</span>
+      </div>
+
+      <!-- EMPTY RESTOS -->
+      <div class="empty-state" *ngIf="!loadingRestos && restaurantsFiltres.length === 0">
+        <div style="font-size:64px;margin-bottom:16px">🏪</div>
+        <div style="font-size:20px;font-weight:700;color:#FFFFFF;margin-bottom:8px">Aucun restaurant</div>
+        <div style="font-size:14px;color:#6B8F77;margin-bottom:20px">Ajoutez votre premier restaurant</div>
+        <button class="btn-primary" (click)="showModalRestaurant = true">🏪 Ajouter un restaurant</button>
+      </div>
+
+      <!-- GRILLE RESTAURANTS -->
+      <div class="resto-grid" *ngIf="!loadingRestos && restaurantsFiltres.length > 0">
+        <div class="resto-card-item" *ngFor="let r of restaurantsFiltres"
+             [class.inactive]="!r.est_actif">
+
+          <div class="rci-img">
+            <img *ngIf="r.photo" [src]="getRestoPhotoUrl(r.photo)" [alt]="r.nom" class="resto-photo">
+            <span *ngIf="!r.photo" class="resto-emoji">🏪</span>
+            <div class="rci-statut" [class.ouvert]="r.est_ouvert" [class.ferme]="!r.est_ouvert">
+              {{ r.est_ouvert ? '● Ouvert' : '○ Fermé' }}
+            </div>
+          </div>
+
+          <div class="rci-body">
+            <div class="rci-name">{{ r.nom }}</div>
+            <div class="rci-ville">📍 {{ r.ville || 'Dakar' }}</div>
+            <div class="rci-desc">{{ r.description || 'Aucune description' }}</div>
+
+            <div class="rci-infos">
+              <span *ngIf="r.telephone">📞 {{ r.telephone }}</span>
+              <span *ngIf="r.email">📧 {{ r.email }}</span>
+              <span>⏱ {{ r.temps_livraison || '—' }}</span>
+              <span>💰 {{ r.frais_livraison || 0 }} F livraison</span>
+            </div>
+
+            <div class="rci-meta">
+              <span class="rci-note" *ngIf="r.note_moyenne > 0">⭐ {{ r.note_moyenne }}</span>
+              <span class="rci-avis">{{ r.nombre_avis || 0 }} avis</span>
+              <span class="rci-badge" *ngIf="r.livraison_gratuite">🚀 Livraison gratuite</span>
+            </div>
+
+            <div class="rci-actions">
+              <button class="ma-btn ma-edit" (click)="ouvrirModifierResto(r)">✏️ Modifier</button>
+              <button class="ma-btn" (click)="toggleRestoActif(r)">
+                {{ r.est_actif ? '○ Désact.' : '● Activer' }}
+              </button>
+              <button class="ma-btn ma-del" (click)="supprimerResto(r)">🗑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HAMBURGER MOBILE -->
+  <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+
+  <!-- INPUT FILES CACHÉS -->
+  <input id="photoPlatInput" type="file" accept="image/*"
+         style="display:none" (change)="onPhotoChangePlat($event)">
+  <input id="photoRestoInput" type="file" accept="image/*"
+         style="display:none" (change)="onPhotoChangeResto($event)">
+
+  <!-- ══ MODAL AJOUT PLAT ══ -->
+  <div class="modal-overlay" [class.show]="showModal"
+       (click)="$event.target === $event.currentTarget && (showModal = false)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">➕ Ajouter un plat</div>
+        <button class="modal-close" (click)="showModal = false; resetFormPlat()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="error-alert" *ngIf="erreurModal">⚠️ {{ erreurModal }}</div>
+
+        <div class="form-group">
+          <label class="form-label">📸 Photo du plat</label>
+          <div class="upload-zone" (click)="cliquerPhotoPLat()">
+            <div *ngIf="!photoPreviewPlat" class="upload-inner">
+              <div class="upload-emoji">📷</div>
+              <div class="upload-text">Cliquez ici pour choisir une photo</div>
+              <div class="upload-sub">PNG, JPG · Max 5MB</div>
+            </div>
+            <img *ngIf="photoPreviewPlat" [src]="photoPreviewPlat" class="photo-preview">
+          </div>
+          <button class="btn-upload-alt btn-remove" *ngIf="photoPreviewPlat"
+                  (click)="supprimerPhotoPLat()">🗑 Supprimer la photo</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nom du plat *</label>
+          <input class="form-input" type="text" [(ngModel)]="nouveauPlat.nom"
+                 placeholder="Ex : Triple Cheese Burger">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input form-textarea" [(ngModel)]="nouveauPlat.description"
+                    placeholder="Décrivez le plat..." rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Emoji</label>
+          <input class="form-input" type="text" [(ngModel)]="nouveauPlat.emoji" placeholder="🍔">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Prix (FCFA) *</label>
+            <input class="form-input" type="number" [(ngModel)]="nouveauPlat.prix" placeholder="3500">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Catégorie</label>
+            <select class="form-input" [(ngModel)]="nouveauPlat.categorie_id">
+              <option value="">Sélectionner</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.emoji }} {{ cat.nom }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Restaurant *</label>
+          <select class="form-input" [(ngModel)]="nouveauPlat.restaurant_id">
+            <option value="">Sélectionner un restaurant</option>
+            <option *ngFor="let r of restaurants" [value]="r.id">{{ r.nom }} · {{ r.ville || 'Dakar' }}</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Disponibilité</label>
+            <select class="form-input" [(ngModel)]="nouveauPlat.est_disponible">
+              <option [ngValue]="true">● Disponible</option>
+              <option [ngValue]="false">○ Indisponible</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Note initiale</label>
+            <input class="form-input" type="number" [(ngModel)]="nouveauPlat.note_moyenne"
+                   placeholder="0" min="0" max="5" step="0.1">
+          </div>
+        </div>
+
+        <div class="check-row">
+          <input type="checkbox" id="populaire" [(ngModel)]="nouveauPlat.est_populaire">
+          <label for="populaire">🔥 Marquer comme plat populaire</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="showModal = false; resetFormPlat()">Annuler</button>
+        <button class="btn-save" (click)="sauvegarderPlat()" [disabled]="loadingSave">
+          <span *ngIf="!loadingSave">💾 Enregistrer le plat</span>
+          <span *ngIf="loadingSave">⏳ Sauvegarde...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL MODIFIER PLAT ══ -->
+  <div class="modal-overlay" [class.show]="showModalModifierPlat"
+       (click)="$event.target === $event.currentTarget && (showModalModifierPlat = false)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">✏️ Modifier le plat</div>
+        <button class="modal-close" (click)="showModalModifierPlat = false">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="error-alert" *ngIf="erreurModal">⚠️ {{ erreurModal }}</div>
+
+        <div class="form-group">
+          <label class="form-label">📸 Photo du plat</label>
+          <div class="upload-zone" (click)="cliquerPhotoPLat()">
+            <div *ngIf="!photoPreviewPlat" class="upload-inner">
+              <div class="upload-emoji">📷</div>
+              <div class="upload-text">Cliquez pour changer la photo</div>
+            </div>
+            <img *ngIf="photoPreviewPlat" [src]="photoPreviewPlat" class="photo-preview">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nom du plat *</label>
+          <input class="form-input" type="text" [(ngModel)]="platEdit.nom">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input form-textarea" [(ngModel)]="platEdit.description" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Emoji</label>
+          <input class="form-input" type="text" [(ngModel)]="platEdit.emoji">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Prix (FCFA) *</label>
+            <input class="form-input" type="number" [(ngModel)]="platEdit.prix">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Catégorie</label>
+            <select class="form-input" [(ngModel)]="platEdit.categorie_id">
+              <option value="">Sélectionner</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.emoji }} {{ cat.nom }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Restaurant</label>
+          <select class="form-input" [(ngModel)]="platEdit.restaurant_id">
+            <option *ngFor="let r of restaurants" [value]="r.id">{{ r.nom }}</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Disponibilité</label>
+            <select class="form-input" [(ngModel)]="platEdit.est_disponible">
+              <option [ngValue]="true">● Disponible</option>
+              <option [ngValue]="false">○ Indisponible</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Note moyenne</label>
+            <input class="form-input" type="number" [(ngModel)]="platEdit.note_moyenne" min="0" max="5" step="0.1">
+          </div>
+        </div>
+
+        <div class="check-row">
+          <input type="checkbox" id="populaireEdit" [(ngModel)]="platEdit.est_populaire">
+          <label for="populaireEdit">🔥 Plat populaire</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="showModalModifierPlat = false">Annuler</button>
+        <button class="btn-save" (click)="sauvegarderModificationPlat()" [disabled]="loadingSave">
+          <span *ngIf="!loadingSave">💾 Enregistrer les modifications</span>
+          <span *ngIf="loadingSave">⏳ Sauvegarde...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL AJOUT RESTAURANT ══ -->
+  <div class="modal-overlay" [class.show]="showModalRestaurant"
+       (click)="$event.target === $event.currentTarget && (showModalRestaurant = false)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🏪 Ajouter un restaurant</div>
+        <button class="modal-close" (click)="showModalRestaurant = false; erreurModal = ''">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="error-alert" *ngIf="erreurModal">⚠️ {{ erreurModal }}</div>
+
+        <div class="form-group">
+          <label class="form-label">📸 Photo du restaurant</label>
+          <div class="upload-zone" (click)="cliquerPhotoResto()">
+            <div *ngIf="!photoPreviewResto" class="upload-inner">
+              <div class="upload-emoji">🏪</div>
+              <div class="upload-text">Cliquez ici pour choisir une photo</div>
+              <div class="upload-sub">PNG, JPG · Max 5MB</div>
+            </div>
+            <img *ngIf="photoPreviewResto" [src]="photoPreviewResto" class="photo-preview">
+          </div>
+          <button class="btn-upload-alt btn-remove" *ngIf="photoPreviewResto"
+                  (click)="supprimerPhotoResto()">🗑 Supprimer</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nom du restaurant *</label>
+          <input class="form-input" type="text" [(ngModel)]="nouveauRestaurant.nom"
+                 placeholder="Ex : Chez Maman Fatou">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input form-textarea" [(ngModel)]="nouveauRestaurant.description"
+                    placeholder="Spécialités, ambiance..." rows="2"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Adresse *</label>
+            <input class="form-input" type="text" [(ngModel)]="nouveauRestaurant.adresse"
+                   placeholder="Rue 10, Plateau">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ville</label>
+            <input class="form-input" type="text" [(ngModel)]="nouveauRestaurant.ville" placeholder="Dakar">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Téléphone</label>
+            <input class="form-input" type="tel" [(ngModel)]="nouveauRestaurant.telephone"
+                   placeholder="77 123 45 67">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" type="email" [(ngModel)]="nouveauRestaurant.email"
+                   placeholder="contact@resto.sn">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Temps de livraison</label>
+            <input class="form-input" type="text" [(ngModel)]="nouveauRestaurant.temps_livraison"
+                   placeholder="30 min">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Frais livraison (F)</label>
+            <input class="form-input" type="number" [(ngModel)]="nouveauRestaurant.frais_livraison" placeholder="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Statut d'ouverture</label>
+          <select class="form-input" [(ngModel)]="nouveauRestaurant.est_ouvert">
+            <option [ngValue]="true">● Ouvert</option>
+            <option [ngValue]="false">○ Fermé</option>
+          </select>
+        </div>
+
+        <div class="check-row">
+          <input type="checkbox" id="gratuite" [(ngModel)]="nouveauRestaurant.livraison_gratuite">
+          <label for="gratuite">🚀 Livraison gratuite</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="showModalRestaurant = false; erreurModal = ''">Annuler</button>
+        <button class="btn-save" (click)="sauvegarderRestaurant()" [disabled]="loadingSave">
+          <span *ngIf="!loadingSave">💾 Enregistrer le restaurant</span>
+          <span *ngIf="loadingSave">⏳ Sauvegarde...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL MODIFIER RESTAURANT ══ -->
+  <div class="modal-overlay" [class.show]="showModalModifierResto"
+       (click)="$event.target === $event.currentTarget && (showModalModifierResto = false)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">✏️ Modifier le restaurant</div>
+        <button class="modal-close" (click)="showModalModifierResto = false">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="error-alert" *ngIf="erreurModal">⚠️ {{ erreurModal }}</div>
+
+        <div class="form-group">
+          <label class="form-label">📸 Photo du restaurant</label>
+          <div class="upload-zone" (click)="cliquerPhotoResto()">
+            <div *ngIf="!photoPreviewResto" class="upload-inner">
+              <div class="upload-emoji">🏪</div>
+              <div class="upload-text">Cliquez pour changer la photo</div>
+            </div>
+            <img *ngIf="photoPreviewResto" [src]="photoPreviewResto" class="photo-preview">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nom *</label>
+          <input class="form-input" type="text" [(ngModel)]="restoEdit.nom">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input form-textarea" [(ngModel)]="restoEdit.description" rows="2"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Adresse *</label>
+            <input class="form-input" type="text" [(ngModel)]="restoEdit.adresse">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ville</label>
+            <input class="form-input" type="text" [(ngModel)]="restoEdit.ville">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Téléphone</label>
+            <input class="form-input" type="tel" [(ngModel)]="restoEdit.telephone">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" type="email" [(ngModel)]="restoEdit.email">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Temps livraison</label>
+            <input class="form-input" type="text" [(ngModel)]="restoEdit.temps_livraison">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Frais livraison (F)</label>
+            <input class="form-input" type="number" [(ngModel)]="restoEdit.frais_livraison">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Statut ouverture</label>
+            <select class="form-input" [(ngModel)]="restoEdit.est_ouvert">
+              <option [ngValue]="true">● Ouvert</option>
+              <option [ngValue]="false">○ Fermé</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statut activité</label>
+            <select class="form-input" [(ngModel)]="restoEdit.est_actif">
+              <option [ngValue]="true">✅ Actif</option>
+              <option [ngValue]="false">🚫 Inactif</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="check-row">
+          <input type="checkbox" id="gratuiteEdit" [(ngModel)]="restoEdit.livraison_gratuite">
+          <label for="gratuiteEdit">🚀 Livraison gratuite</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="showModalModifierResto = false">Annuler</button>
+        <button class="btn-save" (click)="sauvegarderModificationResto()" [disabled]="loadingSave">
+          <span *ngIf="!loadingSave">💾 Enregistrer les modifications</span>
+          <span *ngIf="loadingSave">⏳ Sauvegarde...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
