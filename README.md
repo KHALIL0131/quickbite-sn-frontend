@@ -139,10 +139,10 @@ DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=quickbite_db
-JWT_SECRET=quickbite_secret_key_2026
+JWT_SECRET=votre_cle_secrete
 JWT_EXPIRES_IN=24h
-GMAIL_USER=ibsibzo97@gmail.com
-GMAIL_PASS=sigy pacr ryke qxrt
+GMAIL_USER=votre.email@gmail.com
+GMAIL_PASS=mot_de_passe_application_gmail
 ```
 
 Le `GMAIL_PASS` est un mot de passe d'application Google, pas le mot de passe du compte. Il se génère depuis les paramètres de sécurité du compte Google, section « Mots de passe des applications ».
