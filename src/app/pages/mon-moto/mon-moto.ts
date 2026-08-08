@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -34,7 +35,7 @@ export class MonMoto implements OnInit {
   photoFile: File | null = null;
   photoPreview: string | null = null;
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private router: Router, private cdr: ChangeDetectorRef) {}
 
@@ -142,7 +143,7 @@ export class MonMoto implements OnInit {
   }
 
   getPhotoUrl(photo: string): string {
-    return photo ? `http://localhost:3000/uploads/vehicules/${photo}` : '';
+    return photo ? `${environment.serverUrl}/uploads/vehicules/${photo}` : '';
   }
 
   getTypeIcon(type: string): string {

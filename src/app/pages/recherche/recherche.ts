@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -36,7 +37,7 @@ export class Recherche implements OnInit {
 
   categories: any[] = [];
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private router: Router,
@@ -174,11 +175,11 @@ export class Recherche implements OnInit {
   }
 
   getPlatPhotoUrl(photo: string): string {
-    return photo ? `http://localhost:3000/uploads/plats/${photo}` : '';
+    return photo ? `${environment.serverUrl}/uploads/plats/${photo}` : '';
   }
 
   getRestoPhotoUrl(photo: string): string {
-    return photo ? `http://localhost:3000/uploads/restaurants/${photo}` : '';
+    return photo ? `${environment.serverUrl}/uploads/restaurants/${photo}` : '';
   }
 
   getRestoClass(i: number): string {

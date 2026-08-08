@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -37,7 +38,7 @@ export class Accueil implements OnInit {
   chargementCategories = true;
   erreur = '';
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private router: Router, private cdr: ChangeDetectorRef) { }
 
@@ -201,12 +202,12 @@ export class Accueil implements OnInit {
 
   getPhotoUrl(photo: string): string {
     if (!photo) return '';
-    return `http://localhost:3000/uploads/restaurants/${photo}`;
+    return `${environment.serverUrl}/uploads/restaurants/${photo}`;
   }
 
   getPlatPhotoUrl(photo: string): string {
     if (!photo) return '';
-    return `http://localhost:3000/uploads/plats/${photo}`;
+    return `${environment.serverUrl}/uploads/plats/${photo}`;
   }
 
   onLogoClick() {

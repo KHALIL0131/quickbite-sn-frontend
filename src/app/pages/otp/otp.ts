@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,7 +25,7 @@ export class Otp implements OnInit, OnDestroy {
   timerInterval: any;
   peutRenvoyer = false;
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   get timerAffiche(): string {
     const m = Math.floor(this.secondes / 60).toString().padStart(2, '0');

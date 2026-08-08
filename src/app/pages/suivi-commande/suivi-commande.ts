@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -42,7 +43,7 @@ export class SuiviCommande implements OnInit, OnDestroy {
     { id: 5, icon: '📦', label: 'Livré', desc: 'Votre commande a été livrée', statut: 'pending', heure: '' }
   ];
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private router: Router,

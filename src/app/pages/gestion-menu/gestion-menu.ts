@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -72,7 +73,7 @@ export class GestionMenu implements OnInit {
   photoFileResto: File | null = null;
   photoPreviewResto = '';
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private router: Router, private cdr: ChangeDetectorRef) {}
 
@@ -633,11 +634,11 @@ export class GestionMenu implements OnInit {
   }
 
   getPlatPhotoUrl(photo: string): string {
-    return photo ? `http://localhost:3000/uploads/plats/${photo}` : '';
+    return photo ? `${environment.serverUrl}/uploads/plats/${photo}` : '';
   }
 
   getRestoPhotoUrl(photo: string): string {
-    return photo ? `http://localhost:3000/uploads/restaurants/${photo}` : '';
+    return photo ? `${environment.serverUrl}/uploads/restaurants/${photo}` : '';
   }
 
   toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; this.cdr.detectChanges(); }

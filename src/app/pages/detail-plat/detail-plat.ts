@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -39,7 +40,7 @@ export class DetailPlat implements OnInit {
     { id: 5, emoji: '🌶️', nom: 'Sauce pimentée', desc: 'Extra épicée', prix: 200, checked: false }
   ];
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(
     public router: Router,
@@ -185,7 +186,7 @@ export class DetailPlat implements OnInit {
   decrementer() { if (this.quantite > 1) { this.quantite--; this.cdr.detectChanges(); } }
 
   getPlatPhotoUrl(photo: string): string {
-    return photo ? `http://localhost:3000/uploads/plats/${photo}` : '';
+    return photo ? `${environment.serverUrl}/uploads/plats/${photo}` : '';
   }
 
   getInitiales(): string {

@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +29,7 @@ export class DashboardAdmin implements OnInit, AfterViewInit {
   topPlats: any[] = [];
   activites: any[] = [];
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
   private revenueChart: any = null;
   private catChart: any = null;
   private donneesChargees = false;

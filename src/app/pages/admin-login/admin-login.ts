@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -32,7 +33,7 @@ export class AdminLogin {
   loadingInscription = false;
   erreurInscription = '';
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
   private CODE_SECRET_ADMIN = 'QUICKBITE_ADMIN_2026';
 
   constructor(private router: Router, private cdr: ChangeDetectorRef) {}

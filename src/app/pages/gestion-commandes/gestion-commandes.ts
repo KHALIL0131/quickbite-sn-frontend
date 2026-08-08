@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -38,7 +39,7 @@ export class GestionCommandes implements OnInit {
   erreurAssignation = '';
 
   private socket!: Socket;
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private router: Router, private cdr: ChangeDetectorRef) {}
 
@@ -50,7 +51,7 @@ export class GestionCommandes implements OnInit {
   }
 
   connecterSocket() {
-    this.socket = io('http://localhost:3000', { transports: ['websocket', 'polling'] });
+    this.socket = io(environment.socketUrl, { transports: ['websocket', 'polling'] });
     this.socket.on('connect', () => {
       if (this.admin) this.socket.emit('rejoindre', this.admin.id);
     });

@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +29,7 @@ export class MotDePasseOublie {
   peutRenvoyer = false;
   provenance = 'login';
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   get timerAffiche(): string {
     const m = Math.floor(this.secondes / 60).toString().padStart(2, '0');

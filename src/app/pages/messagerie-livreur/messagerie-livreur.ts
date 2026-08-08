@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -34,7 +35,7 @@ export class MessagerielivreurComponent implements OnInit, OnDestroy {
 
   private socket!: Socket;
   private typingTimeout: any = null;
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(public router: Router, private cdr: ChangeDetectorRef) {}
 
@@ -61,7 +62,7 @@ chargerLivreur() {
 }
 
   connecterSocket() {
-    this.socket = io('http://localhost:3000', { transports: ['websocket', 'polling'] });
+    this.socket = io(environment.socketUrl, { transports: ['websocket', 'polling'] });
 
     this.socket.on('connect', () => {
       if (this.livreur) this.socket.emit('rejoindre', this.livreur.id);

@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -30,7 +31,7 @@ export class Menu implements OnInit {
   chargementRestaurants = true;
   chargementPlats = true;
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private router: Router, private cdr: ChangeDetectorRef) {}
 
@@ -204,11 +205,11 @@ export class Menu implements OnInit {
   }
 
   getPhotoUrl(photo: string): string {
-    return photo ? `http://localhost:3000/uploads/restaurants/${photo}` : '';
+    return photo ? `${environment.serverUrl}/uploads/restaurants/${photo}` : '';
   }
 
   getPlatPhotoUrl(photo: string): string {
-    return photo ? `http://localhost:3000/uploads/plats/${photo}` : '';
+    return photo ? `${environment.serverUrl}/uploads/plats/${photo}` : '';
   }
 
   getInitiales(): string {
