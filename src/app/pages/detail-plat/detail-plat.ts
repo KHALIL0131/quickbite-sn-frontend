@@ -186,7 +186,9 @@ export class DetailPlat implements OnInit {
   decrementer() { if (this.quantite > 1) { this.quantite--; this.cdr.detectChanges(); } }
 
   getPlatPhotoUrl(photo: string): string {
-    return photo ? `${environment.serverUrl}/uploads/plats/${photo}` : '';
+    if (!photo) return '';
+    if (photo.startsWith('http')) return photo;
+    return `${environment.serverUrl}/uploads/plats/${photo}`;
   }
 
   getInitiales(): string {

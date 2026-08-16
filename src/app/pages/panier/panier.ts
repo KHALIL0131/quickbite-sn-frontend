@@ -466,7 +466,9 @@ export class Panier implements OnInit {
   }
 
   getPlatPhotoUrl(photo: string): string {
-    return photo ? `${environment.serverUrl}/uploads/plats/${photo}` : '';
+    if (!photo) return '';
+    if (photo.startsWith('http')) return photo;
+    return `${environment.serverUrl}/uploads/plats/${photo}`;
   }
 
   goToAccueil() { this.router.navigate(['/accueil']); }

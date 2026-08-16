@@ -41,6 +41,10 @@ export class Otp implements OnInit, OnDestroy {
     return this.digits.every(d => d !== '');
   }
 
+  trackByIndex(index: number): number {
+    return index;
+  }
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,

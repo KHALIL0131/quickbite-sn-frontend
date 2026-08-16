@@ -202,11 +202,13 @@ export class Accueil implements OnInit {
 
   getPhotoUrl(photo: string): string {
     if (!photo) return '';
+    if (photo.startsWith('http')) return photo;
     return `${environment.serverUrl}/uploads/restaurants/${photo}`;
   }
 
   getPlatPhotoUrl(photo: string): string {
     if (!photo) return '';
+    if (photo.startsWith('http')) return photo;
     return `${environment.serverUrl}/uploads/plats/${photo}`;
   }
 

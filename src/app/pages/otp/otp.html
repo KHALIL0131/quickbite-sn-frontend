@@ -36,13 +36,13 @@
     <!-- CHAMPS OTP -->
     <div class="otp-inputs" (paste)="onPaste($event)">
       <input class="otp-digit"
-             *ngFor="let d of digits; let i = index"
+             *ngFor="let d of digits; let i = index; trackBy: trackByIndex"
              [class.filled]="digits[i] !== ''"
              [class.error]="erreur && digits[i] === ''"
              type="text"
              inputmode="numeric"
              maxlength="1"
-             [(ngModel)]="digits[i]"
+             [value]="digits[i]"
              (input)="onDigitInput($event, i)"
              (keydown)="onKeyDown($event, i)"
              placeholder="—">
