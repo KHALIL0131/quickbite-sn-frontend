@@ -270,7 +270,6 @@ export class GestionMenu implements OnInit {
       this.loadingSave = false;
       if (data.success) {
         this.showModalModifierPlat = false;
-        this.supprimerPhotoPLat();
         // Mise à jour locale SANS recharger
         const index = this.plats.findIndex(p => p.id === this.platEnEdition.id);
         if (index !== -1) {
@@ -285,9 +284,11 @@ export class GestionMenu implements OnInit {
             est_disponible: this.platEdit.est_disponible,
             est_populaire: this.platEdit.est_populaire,
             note_moyenne: this.platEdit.note_moyenne,
-            nombre_commandes: this.platEdit.nombre_commandes
+            nombre_commandes: this.platEdit.nombre_commandes,
+            photo: this.photoFilePlat ? (data.photo ?? data.data?.photo ?? this.plats[index].photo) : this.plats[index].photo
           };
         }
+        this.supprimerPhotoPLat();
         this.calculerStats();
         this.filtrer();
         this.erreurModal = '';
@@ -358,7 +359,6 @@ export class GestionMenu implements OnInit {
       this.loadingSave = false;
       if (data.success) {
         this.showModalModifierResto = false;
-        this.supprimerPhotoResto();
         // Mise à jour locale SANS recharger
         const index = this.restaurants.findIndex(r => r.id === this.restoEnEdition.id);
         if (index !== -1) {
@@ -374,9 +374,11 @@ export class GestionMenu implements OnInit {
             frais_livraison: this.restoEdit.frais_livraison,
             livraison_gratuite: this.restoEdit.livraison_gratuite,
             est_ouvert: this.restoEdit.est_ouvert,
-            est_actif: this.restoEdit.est_actif
+            est_actif: this.restoEdit.est_actif,
+            photo: this.photoFileResto ? (data.photo ?? data.data?.photo ?? this.restaurants[index].photo) : this.restaurants[index].photo
           };
         }
+        this.supprimerPhotoResto();
         this.erreurModal = '';
       } else {
         this.erreurModal = data.message || 'Erreur';
